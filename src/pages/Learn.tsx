@@ -1,0 +1,186 @@
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { mockCourseDetails } from '@/data/mockData';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { ChevronLeft, ChevronRight, Home, BookOpen, ArrowLeft } from 'lucide-react';
+import { Layout } from '@/components/Layout';
+import { CodeEditor } from '@/components/CodeEditor';
+
+export function Learn() {
+  const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
+  const navigate = useNavigate();
+  const course = mockCourseDetails[courseId || ''];
+
+  if (!course) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-soft-bg pt-24 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-soft-text mb-4">课程不存在</h2>
+            <Link to="/courses" className="text-orange-400 hover:text-orange-300">
+              返回课程列表
+            </Link>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const allLessons = course.chapters.flatMap((ch) => ch.lessons);
+  const currentLessonIndex = allLessons.findIndex((l) => l.id === lessonId);
+  const currentLesson = allLessons[currentLessonIndex];
+  const prevLesson = currentLessonIndex > 0 ? allLessons[currentLessonIndex - 1] : null;
+  const nextLesson = currentLessonIndex < allLessons.length - 1 ? allLessons[currentLessonIndex + 1] : null;
+
+  const currentChapter = course.chapters.find((ch) =>
+    ch.lessons.some((l) => l.id === lessonId)
+  );
+
+  if (!currentLesson) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-soft-bg pt-24 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-soft-text mb-4">课时不存在</h2>
+            <Link to={`/courses/${courseId}`} className="text-orange-400 hover:text-orange-300">
+              返回课程详情
+            </Link>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="min-h-screen bg-soft-bg pt-24">
+        <div className="flex">
+          <aside className="hidden lg:block w-72 bg-slate-900 border-r border-slate-800 h-[calc(100vh-6rem)] overflow-y-auto sticky top-24">
+            <div className="p-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-slate-400 hover:text-white mb-4 transition-colors"
+              >
+                <ArrowLeft size={16} />
+                返回
+              </button>
+              <h3 className="font-semibold text-white mb-4">{course.title}</h3>
+              <div className="space-y-2">
+                {course.chapters.map((chapter, chapterIndex) => (
+                  <div key={chapter.id}>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">
+                      第{chapterIndex + 1}章 {chapter.title}
+                    </div>
+                    <div className="space-y-1 mb-4">
+                      {chapter.lessons.map((lesson) => {
+                        const isActive = lesson.id === lessonId;
+                        return (
+                          <Link
+                            key={lesson.id}
+                            to={`/learn/${courseId}/${lesson.id}`}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                              isActive
+                                ? 'bg-orange-500/20 text-orange-400'
+                                : 'text-slate-300 hover:bg-slate-800'
+                            }`}
+                          >
+                            <BookOpen size={14} />
+                            <span className="truncate">{lesson.title}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          <main className="flex-1 min-h-[calc(100vh-6rem)]">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-soft-muted hover:text-soft-text transition-colors mb-6 lg:hidden"
+              >
+                <ArrowLeft size={20} />
+                <span>返回</span>
+              </button>
+
+              <div className="mb-6">
+                <div className="flex items-center gap-2 text-sm text-soft-muted mb-2">
+                  <Link to="/" className="hover:text-soft-text transition-colors">
+                    <Home size={14} />
+                  </Link>
+                  <ChevronRight size={14} />
+                  <Link to={`/courses/${courseId}`} className="hover:text-soft-text transition-colors">
+                    {course.title}
+                  </Link>
+                  <ChevronRight size={14} />
+                  <span className="text-soft-muted/60">{currentLesson.title}</span>
+                </div>
+                <h1 className="text-2xl font-bold text-soft-text">{currentLesson.title}</h1>
+                {currentChapter && (
+                  <p className="text-soft-muted text-sm mt-1">{currentChapter.title}</p>
+                )}
+              </div>
+
+              <div className="bg-white rounded-3xl shadow-soft p-6 sm:p-8 mb-8">
+                <div className="prose prose-slate max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {currentLesson.content || '暂无内容'}
+                  </ReactMarkdown>
+                </div>
+              </div>
+
+              {currentLesson.practice && (
+                <div className="bg-white rounded-3xl shadow-soft p-6 sm:p-8 mb-8">
+                  <CodeEditor
+                    initialCode={currentLesson.practice.initialCode}
+                    expectedOutput={currentLesson.practice.expectedOutput}
+                    hints={currentLesson.practice.hints}
+                    solution={currentLesson.practice.solution}
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                <div>
+                  {prevLesson ? (
+                    <Link
+                      to={`/learn/${courseId}/${prevLesson.id}`}
+                      className="flex items-center gap-2 px-4 py-2 text-soft-muted hover:text-soft-text transition-colors"
+                    >
+                      <ChevronLeft size={18} />
+                      上一节
+                    </Link>
+                  ) : (
+                    <div />
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {nextLesson ? (
+                    <Link
+                      to={`/learn/${courseId}/${nextLesson.id}`}
+                      className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:shadow-lg transition-all"
+                    >
+                      下一节
+                      <ChevronRight size={18} />
+                    </Link>
+                  ) : (
+                    <Link
+                      to={`/courses/${courseId}`}
+                      className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:shadow-lg transition-all"
+                    >
+                      完成课程
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </Layout>
+  );
+}

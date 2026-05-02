@@ -1,0 +1,630 @@
+《Python数据分析十大实战项目：新手入门详细教程》
+适用人群：数据分析初学者，有一定Python基础（能看懂Pandas基本操作）。
+配套环境：Jupyter Notebook 或 VS Code，安装 pandas, numpy, matplotlib, seaborn, scikit-learn, mlxtend, statsmodels, plotly。
+学习建议：按顺序阅读，每个项目先理解概念，再动手运行代码，最后完成选择题。
+
+项目一：数据清洗实战
+1.1 学习目标
+?知道什么是缺失值、重复值、异常值
+?学会用?pandas?清洗常见脏数据
+?能独立完成一份数据质量报告
+1.2 核心概念（通俗解释）
+?缺失值：表格里某些格子是空的（NaN）。原因：忘记填写、数据采集失败等。
+?重复值：两行记录完全一样（或关键字段一样）。会干扰统计结果。
+?异常值：数值明显偏离正常范围，如年龄300岁、单价负100元。
+?格式不一致：如“2025/01/01”与“01-01-2025”混用，性别有“男”“M”“1”三种表示。
+1.3 简单实操案例（使用虚拟学生成绩表）
+python
+复制
+下载
+import pandas as pd
+import numpy as np
+
+# 创建脏数据
+data = {
+    '姓名': ['张三', '李四', '王五', '赵六', '钱七', '张三'],
+    '数学': [85, None, 78, 92, 105, 85],
+    '英语': [90, 88, None, 95, 89, 90],
+    '性别': ['男', 'M', '女', '男', '1', '男']
+}
+df = pd.DataFrame(data)
+print("原始脏数据：")
+print(df)
+
+# 1. 处理重复值
+print("\n重复行数：", df.duplicated().sum())
+df.drop_duplicates(inplace=True)   # 删除重复行
+
+# 2. 处理缺失值
+print("\n缺失值统计：\n", df.isnull().sum())
+# 数学列用中位数填充
+df['数学'].fillna(df['数学'].median(), inplace=True)
+# 英语列用前一个值填充（forward fill）
+df['英语'].fillna(method='ffill', inplace=True)
+
+# 3. 处理异常值（数学>100视为录入错误，用中位数替换）
+median_math = df['数学'].median()
+df.loc[df['数学'] > 100, '数学'] = median_math
+
+# 4. 格式统一：性别统一为“男”“女”
+df['性别'] = df['性别'].replace({'M':'男', '1':'男'})
+
+print("\n清洗后数据：")
+print(df)
+1.4 选择题（单选）
+1. 下列哪个方法可以查看DataFrame中每列的缺失值数量？
+A.?df.info()
+B.?df.describe()
+C.?df.isnull().sum()
+D.?df.dropna()
+2. 处理异常值最常用的统计方法是？
+A. 直接删除整行
+B. 使用1.5倍IQR准则
+C. 永远保留
+D. 随机替换
+3. 关于重复值处理，以下说法正确的是？
+A.?drop_duplicates()?默认会删除所有重复行，只保留第一次出现的行
+B.?duplicated()?返回一个布尔Series，True表示第一次出现
+C. 重复值必须全部删除，不能保留
+D.?drop_duplicates()?不能按指定列判断重复
+答案：1.C 2.B 3.A
+
+项目二：分组聚合分析
+2.1 学习目标
+?理解“分组-聚合”的含义：split-apply-combine
+?学会用?groupby?和?agg?进行汇总统计
+?能制作数据透视表快速分析业务规律
+2.2 核心概念
+?分组：按某个分类列（如部门、城市）将数据拆成多个小组。
+?聚合：对每个组计算统计量（总和、平均、计数、标准差等）。
+?典型应用：按月统计销售额、按地区统计利润、按用户计算平均订单金额。
+2.3 简单实操案例（商店销售记录）
+python
+复制
+下载
+import pandas as pd
+
+# 模拟一周销售数据
+df = pd.DataFrame({
+    '日期': ['周一','周一','周二','周二','周三','周三'],
+    '产品': ['苹果','香蕉','苹果','香蕉','苹果','香蕉'],
+    '销量': [10, 5, 8, 7, 9, 6]
+})
+print("原始数据：")
+print(df)
+
+# 1. 按产品分组，计算总销量
+grouped = df.groupby('产品')['销量'].sum()
+print("\n各产品总销量：\n", grouped)
+
+# 2. 按日期+产品分组，同时计算总和与平均值
+result = df.groupby(['日期','产品']).agg(
+    总销量=('销量','sum'),
+    平均销量=('销量','mean')
+).reset_index()
+print("\n多级分组聚合结果：\n", result)
+
+# 3. 数据透视表（行=日期，列=产品，值=销量）
+pivot = pd.pivot_table(df, values='销量', index='日期', columns='产品', aggfunc='sum', fill_value=0)
+print("\n透视表：\n", pivot)
+2.4 选择题
+1.?df.groupby('城市')['销售额'].mean()?的作用是？
+A. 计算每个城市的销售额总和
+B. 计算每个城市的销售额平均值
+C. 计算每个产品的销售额平均值
+D. 删除城市列
+2. 下面哪个参数可以让?agg?同时计算总和与个数？
+A.?agg({'销量':'sum', '销量':'count'})
+B.?agg(总=('销量','sum'), 数=('销量','count'))
+C.?agg('sum', 'count')
+D.?agg(['sum','count'])
+3. 透视表?pd.pivot_table(df, index='A', columns='B', values='C')?中，行列交叉处的值默认是？
+A. 计数
+B. 平均值
+C. 总和
+D. 中位数
+答案：1.B 2.B（或D，但B是命名聚合，更推荐；D在旧版可行，但新版建议用命名聚合） 3.B
+
+项目三：购物篮分析（关联规则）
+3.1 学习目标
+?理解“支持度”“置信度”“提升度”的含义
+?学会用?mlxtend?库找出频繁项集和关联规则
+?能解读规则并给出商业建议
+3.2 核心概念
+?购物篮：一次交易中购买的所有商品集合。
+?支持度：包含某商品组合的交易比例。例：{牛奶,面包} 支持度 = 同时购买牛奶和面包的交易数 / 总交易数。
+?置信度：买了A的条件下买B的概率。Conf(A→B) = support(A∪B) / support(A)。
+?提升度：大于1表示正相关，小于1表示负相关。Lift>1是有效规则。
+3.3 简单实操案例（5笔交易的小数据集）
+python
+复制
+下载
+import pandas as pd
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori, association_rules
+
+# 模拟购物篮数据
+dataset = [['牛奶','面包','鸡蛋'],
+           ['牛奶','面包'],
+           ['面包','鸡蛋'],
+           ['牛奶','鸡蛋'],
+           ['牛奶','面包','鸡蛋','黄油']]
+
+# 转换为one-hot编码
+te = TransactionEncoder()
+te_ary = te.fit(dataset).transform(dataset)
+df_basket = pd.DataFrame(te_ary, columns=te.columns_)
+print("One-hot编码表：")
+print(df_basket)
+
+# 找出频繁项集（最小支持度0.4）
+frequent = apriori(df_basket, min_support=0.4, use_colnames=True)
+print("\n频繁项集：")
+print(frequent)
+
+# 生成关联规则（最小提升度1.0）
+rules = association_rules(frequent, metric='lift', min_threshold=1.0)
+print("\n关联规则（按提升度降序）：")
+print(rules[['antecedents','consequents','support','confidence','lift']].sort_values('lift', ascending=False))
+3.4 选择题
+1. 支持度（support）的计算公式是？
+A. 同时包含A和B的交易数 / 包含A的交易数
+B. 包含A或B的交易数 / 总交易数
+C. 同时包含A和B的交易数 / 总交易数
+D. 包含A的交易数 / 总交易数
+2. 若规则 {尿布} → {啤酒} 的提升度 = 1.8，说明：
+A. 买尿布的顾客更不可能买啤酒
+B. 买尿布和买啤酒是独立事件
+C. 买尿布的顾客买啤酒的概率比总体高80%
+D. 提升度小于2，规则无效
+3.?mlxtend?中?apriori(use_colnames=True)?的作用是？
+A. 加快计算速度
+B. 将频繁项集中的物品用原始名称显示，而不是列索引
+C. 只输出长度为2的项集
+D. 自动处理缺失值
+答案：1.C 2.C 3.B
+
+项目四：客户聚类分析（K-Means）
+4.1 学习目标
+?理解“无监督学习”和“聚类”思想
+?会用K-Means对RFM值进行客户分群
+?能解读不同簇的业务特征
+4.2 核心概念
+?聚类：将相似样本自动归为一类，没有事先标记。
+?K-Means：指定K个中心点，迭代更新，使样本到中心点的距离平方和最小。
+?RFM模型：R=最近一次消费距今天数，F=消费频率，M=消费总金额。
+?标准化：因为R、F、M量纲不同，需要转换成均值为0、方差为1的数据。
+4.3 简单实操案例（虚构6个客户RFM数据）
+python
+复制
+下载
+import pandas as pd
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+
+# 创建简单RFM数据
+data = {'customer_id': [1,2,3,4,5,6],
+        'R': [1, 15, 30, 5, 60, 2],   # 最近消费天数，越小越好
+        'F': [10, 3, 1, 7, 2, 9],     # 购买次数
+        'M': [1000, 300, 100, 800, 200, 950]}  # 总金额
+df = pd.DataFrame(data)
+
+# 特征标准化
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df[['R','F','M']])
+
+# 手动决定K=2（简单演示）
+kmeans = KMeans(n_clusters=2, random_state=0)
+df['cluster'] = kmeans.fit_predict(X_scaled)
+
+# 查看每个簇的中心点（原始尺度）
+centers = scaler.inverse_transform(kmeans.cluster_centers_)
+print("簇中心点（R,F,M原始值）：")
+print(centers)
+
+# 分组统计
+print("\n各簇客户统计：")
+print(df.groupby('cluster').agg({'R':'mean','F':'mean','M':'mean','customer_id':'count'}))
+4.4 选择题
+1. K-Means聚类之前为什么要做数据标准化？
+A. 为了让数据变成正态分布
+B. 避免某些数值大的特征主导距离计算
+C. 减少异常值的影响
+D. 加速计算
+2. 如何选择最佳的K值？
+A. 随便选一个
+B. 使用肘部法则（观察SSE的拐点）
+C. 总是选K=3
+D. 使用准确率评估
+3. 关于RFM模型中的R值（Recency），下列说法正确的是？
+A. R值越大表示客户越活跃
+B. R值越小表示客户最近有购买，价值越高
+C. R值只用于分类，不能用于聚类
+D. R值必须取对数
+答案：1.B 2.B 3.B
+
+项目五：数据可视化
+5.1 学习目标
+?知道不同图表类型适用的场景
+?学会用Matplotlib和Seaborn绘制美观的统计图
+?能对图表进行自定义美化（标题、标签、颜色）
+5.2 核心概念
+?折线图：展示随时间变化的趋势。
+?条形图：比较不同类别的数值。
+?直方图：查看连续变量的分布。
+?箱线图：展示数据的四分位数及异常值。
+?散点图：观察两个变量之间的相关性。
+5.3 简单实操案例（月销售数据可视化）
+python
+复制
+下载
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 模拟数据
+df = pd.DataFrame({
+    '月份': ['1月','2月','3月','4月','5月'],
+    '销售额': [120, 135, 150, 170, 160],
+    '广告费': [20, 25, 30, 35, 32]
+})
+
+# 设置中文显示（Windows）
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
+# 1. 折线图
+plt.figure(figsize=(8,4))
+plt.plot(df['月份'], df['销售额'], marker='o', color='blue', label='销售额')
+plt.title('月度销售额趋势')
+plt.xlabel('月份')
+plt.ylabel('万元')
+plt.legend()
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.show()
+
+# 2. 条形图
+plt.figure(figsize=(6,4))
+sns.barplot(data=df, x='月份', y='广告费', palette='Blues_d')
+plt.title('各月广告费')
+plt.show()
+
+# 3. 散点图（销售额 vs 广告费）
+plt.figure(figsize=(5,4))
+sns.scatterplot(data=df, x='广告费', y='销售额', s=100)
+plt.title('广告费与销售额的关系')
+plt.show()
+5.4 选择题
+1. 想要展示不同城市的人均GDP对比，最适合的图表是？
+A. 折线图
+B. 饼图
+C. 条形图
+D. 箱线图
+2.?plt.rcParams['font.sans-serif'] = ['SimHei']?的作用是？
+A. 改变图形大小
+B. 让Matplotlib支持中文显示
+C. 设置坐标轴范围
+D. 保存图片
+3. 箱线图能显示出数据中的什么信息？
+A. 均值、中位数、异常值
+B. 众数
+C. 累计百分比
+D. 相关系数
+答案：1.C 2.B 3.A
+
+项目六：A/B测试分析
+6.1 学习目标
+?理解假设检验的基本原理（p值、显著性水平）
+?学会用t检验和卡方检验评估实验效果
+?能正确解读检验结果并下结论
+6.2 核心概念
+?A/B测试：同时运行两个版本（A对照，B实验），看哪个版本指标更好。
+?原假设H0：两版本无差异；备择假设H1：有差异。
+?p值：若H0成立，观察到当前结果的概率。p<0.05表示结果显著，拒绝H0。
+?t检验：适用于比较两组连续指标（如平均订单金额）。
+?卡方检验：适用于比较两组转化率（二分类指标）。
+6.3 简单实操案例（网页转化率对比）
+python
+复制
+下载
+import numpy as np
+from scipy.stats import ttest_ind, chi2_contingency
+
+# 模拟数据：对照组100人，实验组100人
+np.random.seed(42)
+control_spend = np.random.normal(50, 10, 100)   # 平均消费50元
+treatment_spend = np.random.normal(55, 12, 100) # 平均消费55元
+
+# 连续指标t检验
+t_stat, p_val = ttest_ind(control_spend, treatment_spend, equal_var=False)
+print(f"t检验 p值 = {p_val:.4f}")
+if p_val < 0.05:
+    print("结论：实验组平均消费显著高于对照组")
+else:
+    print("结论：无显著差异")
+
+# 转化率（是否购买）：对照组转化率40%，实验组55%
+control_conv = [40, 60]   # [购买, 未买]
+treatment_conv = [55, 45]
+conv_table = np.array([control_conv, treatment_conv])
+chi2, p, dof, ex = chi2_contingency(conv_table)
+print(f"\n卡方检验 p值 = {p:.4f}")
+if p < 0.05:
+    print("结论：实验组转化率显著提高")
+6.4 选择题
+1. 在A/B测试中，通常设定显著性水平α=0.05，这意味着？
+A. 有5%的概率犯第一类错误（误判有差异）
+B. 有95%的概率接受原假设
+C. 实验组必须提升5%以上才算有效
+D. 样本量必须是总体的5%
+2. 以下哪项适合用双样本t检验？
+A. 比较两组用户的性别比例差异
+B. 比较两组用户的手机品牌分布
+C. 比较两组用户的平均年龄
+D. 比较实验前后同一组用户的满意度
+3. 若p=0.03，下列结论正确的是？
+A. 接受原假设，两版本无差异
+B. 在0.05水平下拒绝原假设，认为有差异
+C. 必须再做一次实验
+D. 实验无效
+答案：1.A 2.C 3.B
+
+项目七：时间序列分析
+7.1 学习目标
+?理解时间序列的组成（趋势、季节、残差）
+?学会用简单移动平均和ARIMA模型做预测
+?熟悉ADF平稳性检验
+7.2 核心概念
+?平稳性：均值和方差不随时间变化。大部分模型要求序列平稳。
+?差分：将当前值减去前一个值，使非平稳序列变平稳。
+?ARIMA(p,d,q)：自回归(AR)、差分(I)、移动平均(MA)的组合。
+?ACF/PACF：决定p和q的阶数。
+7.3 简单实操案例（季度销售额预测）
+python
+复制
+下载
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.stattools import adfuller
+
+# 构造一个简单的时间序列（季度数据）
+dates = pd.date_range('2020-01', periods=20, freq='Q')
+sales = [100, 110, 105, 120, 130, 140, 135, 150, 160, 170,
+         165, 180, 190, 200, 195, 210, 220, 230, 225, 240]
+ts = pd.Series(sales, index=dates)
+
+print("原始序列前五行：")
+print(ts.head())
+
+# 1. ADF平稳性检验
+result = adfuller(ts)
+print(f"ADF p-value: {result[1]:.4f}")
+if result[1] <= 0.05:
+    print("序列平稳")
+else:
+    print("序列非平稳，需要进行一阶差分")
+    ts_diff = ts.diff().dropna()
+    print("差分后检验p值:", adfuller(ts_diff)[1])
+
+# 2. 简单ARIMA模型（手动定阶 p=1,d=1,q=1）
+model = ARIMA(ts, order=(1,1,1))
+fitted = model.fit()
+print(fitted.summary())
+
+# 3. 预测未来4个季度
+forecast = fitted.forecast(steps=4)
+print("\n未来4季度预测值：", forecast)
+
+# 可视化
+plt.figure(figsize=(8,4))
+plt.plot(ts, label='实际值')
+plt.plot(forecast, marker='o', label='预测值', linestyle='--')
+plt.legend()
+plt.title('时间序列预测')
+plt.show()
+7.4 选择题
+1. 什么是时间序列的“平稳性”？
+A. 序列没有缺失值
+B. 序列的统计特性（均值、方差）不随时间变化
+C. 序列是周期性的
+D. 序列没有异常值
+2. ARIMA模型中的“I”代表什么？
+A. 整合（差分次数）
+B. 季节项
+C. 自回归阶数
+D. 移动平均阶数
+3. 以下哪种方法可以用来判断序列是否平稳？
+A. 箱线图
+B. ADF检验
+C. 关联规则
+D. 主成分分析
+答案：1.B 2.A 3.B
+
+项目八：特征工程
+8.1 学习目标
+?理解为什么要做特征工程
+?学会对数值特征进行标准化/归一化/对数变换
+?学会对类别特征做One-hot编码和Target Encoding
+?了解特征选择的简单方法
+8.2 核心概念
+?特征缩放：让所有特征在相同尺度上，避免大数值主导模型。
+?One-hot编码：将类别（如红、绿、蓝）转为0/1二值列。
+?分箱：将连续年龄转为“青年、中年、老年”。
+?特征选择：保留最重要的特征，剔除冗余或噪声特征。
+8.3 简单实操案例（房价预测预处理）
+python
+复制
+下载
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+
+# 原始数据
+df = pd.DataFrame({
+    '面积': [50, 80, 120, 60, 90],
+    '卧室数': [1, 2, 3, 1, 2],
+    '楼层': [1, 5, 10, 2, 7],
+    '朝向': ['南','东','南','西','北'],
+    '价格': [200, 320, 480, 250, 360]
+})
+
+# 1. 数值特征标准化
+scaler = StandardScaler()
+num_cols = ['面积','卧室数','楼层']
+df_scaled = scaler.fit_transform(df[num_cols])
+df_scaled = pd.DataFrame(df_scaled, columns=num_cols)
+
+# 2. 类别特征One-hot编码
+encoder = OneHotEncoder(sparse_output=False)
+cat_encoded = encoder.fit_transform(df[['朝向']])
+cat_names = encoder.get_feature_names_out(['朝向'])
+df_cat = pd.DataFrame(cat_encoded, columns=cat_names)
+
+# 3. 合并特征
+X = pd.concat([df_scaled, df_cat], axis=1)
+print("最终特征矩阵：")
+print(X)
+
+# 4. 简单特征选择：删除方差很小的特征（例如朝向_北方差低）
+from sklearn.feature_selection import VarianceThreshold
+selector = VarianceThreshold(threshold=0.1)
+X_selected = selector.fit_transform(X)
+print("特征选择后保留的特征数量：", X_selected.shape[1])
+8.4 选择题
+1. 以下哪项不是特征工程的目的？
+A. 提升模型性能
+B. 减少训练数据量
+C. 让数据更适合算法输入
+D. 处理缺失值
+2. 对于有5个类别的名义变量，One-hot编码后会生成几个新列？
+A. 1
+B. 5
+C. 4
+D. 取决于样本量
+3. 当某个数值特征分布严重右偏（长尾）时，常见处理方式是？
+A. 取对数变换
+B. 标准化
+C. 直接删除
+D. 填补缺失值
+答案：1.B 2.B（如果用drop_first=False） 3.A
+
+项目九：异常值检测
+9.1 学习目标
+?掌握IQR和Z-score单变量异常检测
+?了解孤立森林等多变量异常检测方法
+?能合理处理异常值（删除或修正）
+9.2 核心概念
+?IQR法：四分位距 IQR = Q3 - Q1，超出 [Q1-1.5IQR, Q3+1.5IQR] 的点为异常。
+?Z-score：数据点偏离多少个标准差，通常 |Z|>3 视为异常。
+?孤立森林：随机切分特征空间，容易被切分出来的点为异常（因为异常点分布稀疏）。
+9.3 简单实操案例（检测收入异常值）
+python
+复制
+下载
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+
+# 包含异常的收入数据
+df = pd.DataFrame({'收入': [5000, 5200, 5100, 4900, 100000, 5300, 4800, 300000]})
+
+# 方法1：IQR
+Q1 = df['收入'].quantile(0.25)
+Q3 = df['收入'].quantile(0.75)
+IQR = Q3 - Q1
+lower = Q1 - 1.5 * IQR
+upper = Q3 + 1.5 * IQR
+df['IQR异常'] = (df['收入'] < lower) | (df['收入'] > upper)
+
+# 方法2：孤立森林
+iso = IsolationForest(contamination=0.1, random_state=42)
+df['IF异常'] = iso.fit_predict(df[['收入']])  # -1为异常
+df['IF异常'] = df['IF异常'] == -1
+
+print("检测结果：")
+print(df)
+9.4 选择题
+1. 关于箱线图的IQR准则，以下哪个范围被认为正常？
+A. [Q1-2IQR, Q3+2IQR]
+B. [Q1-1.5IQR, Q3+1.5IQR]
+C. [Q1-0.5IQR, Q3+0.5IQR]
+D. [Q1, Q3]
+2. 孤立森林算法适用于哪种场景？
+A. 只有一维数据时效果最好
+B. 高维数据的异常检测
+C. 数据必须服从正态分布
+D. 只能检测全局异常，不能检测局部异常
+3. 发现异常值后，最不恰当的处理方式是？
+A. 结合业务判断是否为真实异常
+B. 一律删除
+C. 用中位数或均值修正
+D. 如果异常是因为录入错误，则更正
+答案：1.B 2.B 3.B
+
+项目十：多数据集合并
+10.1 学习目标
+?区分?concat?和?merge?的用途
+?学会按不同连接方式（left, right, inner, outer）合并表格
+?能处理合并后的重复列名和缺失值
+10.2 核心概念
+?纵向合并（concat）：将行数增加，要求列名一致。常用于合并不同月份的相同结构数据。
+?横向合并（merge）：根据一个或多个键值将两个表接在一起，类似SQL的JOIN。
+?连接方式：
+oinner: 只保留键在两张表都存在的行
+oleft: 保留左表所有行，右表匹配不到的为NaN
+oouter: 保留所有行
+10.3 简单实操案例（学生信息表 + 成绩表）
+python
+复制
+下载
+import pandas as pd
+
+# 学生基本信息表
+students = pd.DataFrame({
+    '学号': [101, 102, 103, 104],
+    '姓名': ['张三', '李四', '王五', '赵六'],
+    '班级': ['1班', '2班', '1班', '3班']
+})
+
+# 考试成绩表（部分学生缺考）
+scores = pd.DataFrame({
+    '学号': [101, 102, 104, 105],
+    '成绩': [85, 92, 78, 88]
+})
+
+# 1. 内连接（只保留有成绩的学生）
+inner_merge = pd.merge(students, scores, on='学号', how='inner')
+print("内连接结果：\n", inner_merge)
+
+# 2. 左连接（保留所有学生，没成绩的为NaN）
+left_merge = pd.merge(students, scores, on='学号', how='left')
+print("\n左连接结果：\n", left_merge)
+
+# 3. 纵向合并：假如有两张相同结构的成绩表
+scores2 = pd.DataFrame({
+    '学号': [106, 107],
+    '成绩': [95, 82]
+})
+all_scores = pd.concat([scores, scores2], ignore_index=True)
+print("\n纵向合并成绩表：\n", all_scores)
+10.4 选择题
+1. 想要把两个行数不同、列相同的DataFrame上下拼接，应该使用？
+A.?pd.merge()
+B.?pd.concat(axis=1)
+C.?pd.concat(axis=0)
+D.?pd.join()
+2. 下面哪个连接方式会保留左表所有行，右表匹配不到的填充NaN？
+A. inner
+B. left
+C. right
+D. outer
+3. 执行?pd.merge(df1, df2, on='ID', how='inner')?后，行数会？
+A. 等于df1行数
+B. 等于df2行数
+C. 等于两个表中ID都存在的交集行数
+D. 等于df1和df2行数之和
+答案：1.C 2.B 3.C

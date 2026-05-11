@@ -4,11 +4,21 @@ import { useCourseStore } from '@/store/courseStore';
 import { mockCourses } from '@/data/mockData';
 import { User, BookOpen, Clock, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Layout } from '@/components/Layout';
+import { useState } from 'react';
 
 export function Profile() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { userProgress } = useCourseStore();
+  const [startLearningState, setStartLearningState] = useState({ disabled: false, text: '' });
+
+  const handleStartLearning = () => {
+    setStartLearningState({ disabled: true, text: '⏳ 加载中...' });
+    setTimeout(() => {
+      alert('课程环境启动中，首次稍慢');
+    }, 2000);
+    navigate('/');
+  };
 
   const totalCompletedLessons = Object.values(userProgress).reduce(
     (acc, progress) => acc + progress.completedLessons.length,
@@ -126,12 +136,13 @@ export function Profile() {
             ) : (
               <div className="p-8 bg-white rounded-3xl shadow-soft text-center">
                 <p className="text-soft-muted mb-4">还没有学习记录</p>
-                <Link
-                  to="/"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:shadow-lg transition-all"
+                <button
+                  onClick={handleStartLearning}
+                  disabled={startLearningState.disabled}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  开始学习
-                </Link>
+                  {startLearningState.text || '开始学习'}
+                </button>
               </div>
             )}
           </div>

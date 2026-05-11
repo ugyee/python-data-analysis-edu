@@ -120,6 +120,7 @@ export function ProjectDetail() {
   const course = mockCourseDetails[courseId || ''];
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [showAssistant, setShowAssistant] = useState(false);
+  const [startLearningState, setStartLearningState] = useState({ disabled: false, text: '开始学习' });
 
   const faqItems = [
     {
@@ -161,6 +162,14 @@ export function ProjectDetail() {
   const firstLesson = course.chapters[0]?.lessons[0];
   const techStack = technologyStackInfo[courseId || ''] || defaultTechStack;
   const expectedOutputs = getExpectedOutputs(courseId || '');
+
+  const handleStartLearning = () => {
+    setStartLearningState({ disabled: true, text: '⏳ 加载中...' });
+    setTimeout(() => {
+      alert('课程环境启动中，首次稍慢');
+    }, 2000);
+    navigate(`/learn/${courseId}/${firstLesson?.id}`);
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -375,13 +384,14 @@ export function ProjectDetail() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link
-            to={`/learn/${courseId}/${firstLesson?.id}`}
-            className="flex-1 flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-500 to-purple-500 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-primary-500/30 transition-all"
+          <button
+            onClick={handleStartLearning}
+            disabled={startLearningState.disabled}
+            className="flex-1 flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-500 to-purple-500 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-primary-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
             <Play size={20} />
-            <span>开始学习</span>
-          </Link>
+            <span>{startLearningState.text}</span>
+          </button>
           <button
             disabled
             className="flex-1 flex items-center justify-center gap-2 px-8 py-4 bg-gray-200 text-gray-500 font-semibold rounded-2xl cursor-not-allowed"

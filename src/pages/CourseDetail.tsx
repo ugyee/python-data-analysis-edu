@@ -2,11 +2,21 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { mockCourseDetails } from '@/data/mockData';
 import { Clock, BookOpen, Play, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Layout } from '@/components/Layout';
+import { useState } from 'react';
 
 export function CourseDetail() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const course = mockCourseDetails[id || ''];
+  const [startLearningState, setStartLearningState] = useState({ disabled: false, text: '开始学习' });
+
+  const handleStartLearning = () => {
+    setStartLearningState({ disabled: true, text: '⏳ 加载中...' });
+    setTimeout(() => {
+      alert('课程环境启动中，首次稍慢');
+    }, 2000);
+    navigate(`/learn/${id}/${course?.chapters[0]?.lessons[0]?.id}`);
+  };
 
   if (!course) {
     return (
@@ -24,7 +34,6 @@ export function CourseDetail() {
   }
 
   const totalLessons = course.chapters.reduce((acc, ch) => acc + ch.lessons.length, 0);
-  const firstLesson = course.chapters[0]?.lessons[0];
 
   return (
     <Layout>
@@ -105,13 +114,14 @@ export function CourseDetail() {
           </div>
         </div>
 
-        <Link
-          to={`/learn/${id}/${firstLesson?.id}`}
-          className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-orange-500/30 transition-all"
+        <button
+          onClick={handleStartLearning}
+          disabled={startLearningState.disabled}
+          className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-orange-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
         >
           <Play size={20} />
-          开始学习
-        </Link>
+          {startLearningState.text}
+        </button>
       </div>
     </Layout>
   );

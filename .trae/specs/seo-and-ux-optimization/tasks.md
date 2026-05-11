@@ -12,7 +12,7 @@
   - `programmatic` TR-1.2: meta description包含核心关键词
   - `programmatic` TR-1.3: html标签有lang="zh-CN"
 
-### [ ] Task 2: 站点地图创建
+### [x] Task 2: 站点地图创建
 - **Priority**: P0
 - **Depends On**: None
 - **Description**: 创建sitemap.xml文件
@@ -68,7 +68,7 @@
   - `human-judgement` TR-7.1: 交互元素有aria-label
   - `human-judgement` TR-7.2: 按钮有描述性文本
 
-### [ ] Task 8: 同步到GitHub
+### [x] Task 8: 同步到GitHub
 - **Priority**: P0
 - **Depends On**: Task 1-7
 - **Description**: 将所有更改同步到GitHub仓库

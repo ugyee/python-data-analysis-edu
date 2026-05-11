@@ -1,85 +1,80 @@
 # Tasks
 
-## [ ] Task 1: 修改按钮为获取代码 + 模态框
-- **Priority**: P0
+## [ ] Task 1: SEO基础补齐
+- **Priority**: P0 (高优先级)
 - **Depends On**: None
-- **Description**: 将"立即注册"按钮改为"获取项目代码"，实现模态框（含前端校验）
-- **Acceptance Criteria Addressed**: R1
+- **Description**: 在index.html的<head>中添加SEO meta标签
 - **Test Requirements**:
-  - `human-judgement` TR-1.1: 点击弹出模态框
-  - `human-judgement` TR-1.2: 空值校验显示红色提示
-  - `human-judgement` TR-1.3: 提交模拟成功通知
+  - `programmatic` TR-1.1: title为"Pandas数据分析实战训练营 | 10个实战项目 浏览器内运行代码"
+  - `programmatic` TR-1.2: meta description包含数据分析、Pandas等关键词
+  - `programmatic` TR-1.3: 添加keywords和author meta标签
 
-## [x] Task 2: 实现顶部水平导航 + 平滑滚动
-- **Priority**: P0
+## [x] Task 2: 按钮点击反馈优化
+- **Priority**: P0 (高优先级)
 - **Depends On**: None
-- **Description**: 实现顶部水平导航菜单，三个链接，点击可滚动到对应区域
-- **Acceptance Criteria Addressed**: R2
+- **Description**: 为开始学习按钮添加loading状态和disabled属性
 - **Test Requirements**:
-  - `human-judgement` TR-2.1: 三个链接（课程概览、实战项目、讲师介绍）
-  - `human-judgement` TR-2.2: 点击可滚动到对应区域
+  - `human-judgement` TR-2.1: 点击后按钮文字变为"⏳ 加载中..."
+  - `human-judgement` TR-2.2: 按钮设置disabled防止重复点击
+  - `human-judgement` TR-2.3: 2秒后显示"课程环境启动中，首次稍慢"提示
 
-## [x] Task 3: 添加复制代码功能
-- **Priority**: P0
+## [ ] Task 3: 环境加载失败降级
+- **Priority**: P0 (高优先级)
 - **Depends On**: None
-- **Description**: 为10个项目卡片添加复制按钮，每个项目有独立的初始化代码模板
-- **Acceptance Criteria Addressed**: R3
+- **Description**: Pyodide加载超时8秒后显示友好提示条
 - **Test Requirements**:
-  - `human-judgement` TR-3.1: 每个卡片有复制按钮
-  - `human-judgement` TR-3.2: 点击复制正确内容并通知
+  - `human-judgement` TR-3.1: 超时后显示可关闭的提示条
+  - `human-judgement` TR-3.2: 提示内容包含"环境加载较慢，请刷新页面重试"
 
-## [ ] Task 4: 实现左侧侧边栏
-- **Priority**: P1
+## [ ] Task 4: 课程设计者简介
+- **Priority**: P1 (中优先级)
 - **Depends On**: None
-- **Description**: 实现固定左侧侧边栏（280px），包含全部章节列表，使用Intersection Observer实现滚动高亮
-- **Acceptance Criteria Addressed**: R4
+- **Description**: 页面底部添加<details>折叠区域
 - **Test Requirements**:
-  - `human-judgement` TR-4.1: 侧边栏固定，章节完整
-  - `human-judgement` TR-4.2: 滚动高亮正确，点击锚点平滑滚动
+  - `human-judgement` TR-4.1: 使用<details>元素实现折叠
+  - `human-judgement` TR-4.2: 默认收起，点击展开
+  - `human-judgement` TR-4.3: 放在页面底部，不改变现有布局
 
-## [x] Task 5: 实现上一节/下一节按钮
-- **Priority**: P1
-- **Depends On**: Task 4
-- **Description**: 每个项目底部显示跳转按钮，边界情况（首/末）正确处理
-- **Acceptance Criteria Addressed**: R5
-- **Test Requirements**:
-  - `human-judgement` TR-5.1: 按钮显示正确
-  - `human-judgement` TR-5.2: 边界情况处理正确
-
-## [x] Task 6: 实现回到顶部按钮
-- **Priority**: P1
+## [ ] Task 5: 学习进度本地存储
+- **Priority**: P1 (中优先级)
 - **Depends On**: None
-- **Description**: 右下角悬浮按钮，滚动超过300px显示，点击平滑回顶
-- **Acceptance Criteria Addressed**: R6
+- **Description**: localStorage记录已完成项目，显示✅角标
 - **Test Requirements**:
-  - `human-judgement` TR-6.1: 滚动超过300px显示
-  - `human-judgement` TR-6.2: 点击平滑回顶
+  - `human-judgement` TR-5.1: 点击标记完成按钮保存到localStorage
+  - `human-judgement` TR-5.2: 刷新页面后显示✅角标
+  - `human-judgement` TR-5.3: 不改变卡片结构和排列
 
-## [x] Task 7: 重构页面布局
-- **Priority**: P1
+## [x] Task 6: 环境测试按钮
+- **Priority**: P1 (中优先级)
 - **Depends On**: None
-- **Description**: 最大宽度1400px居中 + 两列卡片网格布局
-- **Acceptance Criteria Addressed**: 页面布局
+- **Description**: 代码编辑器上方增加"测试运行"按钮
 - **Test Requirements**:
-  - `human-judgement` TR-7.1: 主容器居中，卡片两列
+  - `human-judgement` TR-6.1: 点击运行import pandas测试
+  - `human-judgement` TR-6.2: 成功显示绿色提示
+  - `human-judgement` TR-6.3: 失败显示红色提示及解决办法
 
-## [x] Task 8: 统一样式
-- **Priority**: P2
+## [ ] Task 7: sitemap.xml和robots.txt
+- **Priority**: P2 (低优先级)
 - **Depends On**: None
-- **Description**: 标题层级、行高、关键词高亮、代码块深色主题
-- **Acceptance Criteria Addressed**: R7
+- **Description**: 创建SEO友好的sitemap和robots文件
 - **Test Requirements**:
-  - `human-judgement` TR-8.1: 视觉符合设计稿
-  - `human-judgement` TR-8.2: 代码块样式正确
+  - `programmatic` TR-7.1: robots.txt允许所有爬虫抓取
+  - `programmatic` TR-7.2: sitemap.xml列出所有课程URL
 
-## [x] Task 9: 同步到GitHub
+## [x] Task 8: 结构化数据JSON-LD
+- **Priority**: P2 (低优先级)
+- **Depends On**: None
+- **Description**: 在<head>中添加JSON-LD结构化数据
+- **Test Requirements**:
+  - `programmatic` TR-8.1: JSON-LD包含10个课程信息
+  - `programmatic` TR-8.2: 使用schema.org ItemList格式
+
+## [ ] Task 9: 同步到GitHub
 - **Priority**: P0
 - **Depends On**: Task 1-8
 - **Description**: 将所有更改同步到GitHub仓库
-- **Acceptance Criteria Addressed**: None
 - **Test Requirements**:
   - `programmatic` TR-9.1: git push成功完成
 
 # Task Dependencies
-- Task 5 depends on Task 4
 - Task 9 depends on Task 1-8

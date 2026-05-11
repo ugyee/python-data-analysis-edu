@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Play, RefreshCw, Copy, CheckCircle } from 'lucide-react';
+import { Play, RefreshCw, Copy, CheckCircle, FlaskConical } from 'lucide-react';
 
 export function MiniCodeRunner() {
   const [code, setCode] = useState(`import pandas as pd
@@ -19,8 +19,17 @@ print(df)
   const [plotImage, setPlotImage] = useState('');
   const [copied, setCopied] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState('');
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
+  const [testStatus, setTestStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [testMessage, setTestMessage] = useState('');
 
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!hasLoaded) {
+        setShowTimeoutWarning(true);
+      }
+    }, 8000);
+
     async function loadPyodide() {
       try {
         setLoadingProgress('正在加载Pyodide...');
@@ -69,6 +78,10 @@ print(df)
       }
     }
     loadPyodide();
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const handleRun = useCallback(async () => {
@@ -140,8 +153,52 @@ print(df)
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleTestRun = useCallback(async () => {
+    setTestStatus('idle');
+    setTestMessage('');
+    
+    if (!(window as any).pyodide) {
+      setTestStatus('error');
+      setTestMessage('Pyodide 加载中...请稍候再试');
+      return;
+    }
+
+    try {
+      const pyodide = (window as any).pyodide;
+      const result = await pyodide.runPythonAsync('import pandas as pd; print(pd.__version__)');
+      
+      if (result && result.includes('.')) {
+        setTestStatus('success');
+        setTestMessage(`✅ 环境测试成功！Pandas 版本: ${result.trim()}`);
+      } else {
+        setTestStatus('success');
+        setTestMessage('✅ 环境测试成功！Pandas 已正确安装');
+      }
+    } catch (err: any) {
+      setTestStatus('error');
+      const errorMsg = err.message || String(err);
+      if (errorMsg.includes('ModuleNotFoundError') || errorMsg.includes('ImportError')) {
+        setTestMessage(`❌ 测试失败: pandas 未安装\n\n💡 解决方法：刷新页面或检查网络连接`);
+      } else {
+        setTestMessage(`❌ 测试失败: ${errorMsg}\n\n💡 请检查网络连接后刷新页面重试`);
+      }
+    }
+  }, []);
+
   return (
     <div className="bg-white rounded-2xl shadow-soft overflow-hidden h-full flex flex-col">
+      {showTimeoutWarning && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-amber-800">⚠️ 环境加载较慢，请刷新页面重试</span>
+          <button
+            onClick={() => setShowTimeoutWarning(false)}
+            className="text-amber-600 hover:text-amber-800 font-medium text-sm"
+          >
+            关闭
+          </button>
+        </div>
+      )}
+      
       <div className="bg-gradient-to-r from-primary-500 to-primary-600 px-5 py-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-white">Python 在线运行</h3>
@@ -155,6 +212,25 @@ print(df)
       
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-4">
+          {testStatus !== 'idle' && (
+            <div className={`p-3 rounded-xl text-sm ${
+              testStatus === 'success' 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              <pre className="whitespace-pre-wrap font-mono">{testMessage}</pre>
+            </div>
+          )}
+          
+          <button
+            onClick={handleTestRun}
+            disabled={isRunning || !hasLoaded}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white font-medium rounded-xl hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FlaskConical size={16} />
+            <span>测试运行</span>
+          </button>
+          
           <div className="bg-slate-800 rounded-lg overflow-hidden">
             <div className="flex items-center justify-between px-3 py-2 bg-slate-700">
               <span className="text-xs text-slate-400 font-mono">practice.py</span>

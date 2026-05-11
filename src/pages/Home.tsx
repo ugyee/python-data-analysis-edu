@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { CourseCard } from '@/components/CourseCard';
 import { GetCodeModal } from '@/components/GetCodeModal';
@@ -24,11 +24,42 @@ const sidebarItems = [
 ];
 
 export function Home() {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('course-overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [completedProjects, setCompletedProjects] = useState<Set<string>>(new Set());
+  const [startLearningState, setStartLearningState] = useState({ disabled: false, text: '' });
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  const handleStartLearning = () => {
+    setStartLearningState({ disabled: true, text: '⏳ 加载中...' });
+    setTimeout(() => {
+      alert('课程环境启动中，首次稍慢');
+    }, 2000);
+    navigate('/courses');
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('completedProjects');
+    if (saved) {
+      setCompletedProjects(new Set(JSON.parse(saved)));
+    }
+  }, []);
+
+  const toggleComplete = (courseId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newCompleted = new Set(completedProjects);
+    if (newCompleted.has(courseId)) {
+      newCompleted.delete(courseId);
+    } else {
+      newCompleted.add(courseId);
+    }
+    setCompletedProjects(newCompleted);
+    localStorage.setItem('completedProjects', JSON.stringify([...newCompleted]));
+  };
 
   useEffect(() => {
     const observerOptions = {
@@ -151,14 +182,15 @@ export function Home() {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <Link
-                    to="/courses"
-                    className="group flex items-center gap-2 px-8 py-4 bg-soft-gradient text-white font-semibold rounded-2xl shadow-soft hover:shadow-soft-lg transition-all hover:scale-105"
+                  <button
+                    onClick={handleStartLearning}
+                    disabled={startLearningState.disabled}
+                    className="group flex items-center gap-2 px-8 py-4 bg-soft-gradient text-white font-semibold rounded-2xl shadow-soft hover:shadow-soft-lg transition-all hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     <Rocket size={20} />
-                    开始学习
+                    {startLearningState.text || '开始学习'}
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                  </button>
                   {!isAuthenticated && (
                     <button
                       onClick={() => setIsModalOpen(true)}
@@ -322,15 +354,29 @@ export function Home() {
               const projectId = `project-${course.id}`;
               const prevCourse = index > 0 ? mockCourses[index - 1] : null;
               const nextCourse = index < mockCourses.length - 1 ? mockCourses[index + 1] : null;
+              const isCompleted = completedProjects.has(course.id);
 
               return (
                 <div 
                   key={course.id}
                   id={projectId}
-                  className="animate-fadeIn"
+                  className="animate-fadeIn relative"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
+                  {isCompleted && (
+                    <div className="absolute top-2 left-2 z-10 text-2xl">✅</div>
+                  )}
                   <CourseCard course={course} />
+                  <button
+                    onClick={(e) => toggleComplete(course.id, e)}
+                    className={`mt-2 w-full py-2 rounded-xl text-sm font-medium transition-colors ${
+                      isCompleted 
+                        ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {isCompleted ? '✅ 已完成' : '✓ 标记完成'}
+                  </button>
                   <div className="mt-3 flex items-center justify-between gap-2">
                     {prevCourse ? (
                       <a
@@ -416,6 +462,14 @@ export function Home() {
             </div>
           </div>
         </section>
+
+        <details className="mt-8 pt-6 px-4 border-t border-gray-200">
+          <summary className="cursor-pointer font-bold">📌 课程设计者</summary>
+          <p className="mt-3 text-gray-600">
+            {`本站课程由一线数据分析专家设计，所有项目均来自真实业务场景（电商/金融/用户增长）。`}<br />
+            {`每个项目的代码均已在浏览器端验证通过，可直接运行。`}
+          </p>
+        </details>
 
         <section className="mt-16">
           <div className="bg-gradient-to-br from-white via-primary-50/50 to-accent-pink/20 rounded-3xl p-8 shadow-soft text-center relative overflow-hidden">

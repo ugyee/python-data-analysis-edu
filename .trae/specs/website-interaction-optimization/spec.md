@@ -1,111 +1,101 @@
-# 网站交互优化 Spec
+# 网站优化 Spec（严格遵守改动限制）
 
-## Why
-当前网站内容完整，但缺乏现代化的交互体验和PC大屏的深度布局。用户需要方便地获取项目代码、快速导航章节、流畅阅读、高效实操、便捷跳转。
+## 改动限制（绝对不动）
+- ❌ 不改任何间距、颜色、字体、按钮大小、卡片尺寸
+- ❌ 不改首屏Hero区域
+- ❌ 不做响应式适配
+- ❌ 不修改任何现有布局结构
+- ❌ 不添加浮动元素、侧边栏、弹窗（除非是可关闭的临时提示）
+
+## 允许改动的内容
+- `<head>`中的meta/title/link
+- 按钮的disabled状态和文字
+- 追加loading提示元素
+- 增加JS交互反馈
+- 增加本地存储
+- 增加可折叠区域
+- 增加sitemap.xml/robots.txt
+- 增加代码运行时错误友好提示
 
 ## What Changes
-1. **交互新增**：
-   - 获取项目代码按钮：替换原有"立即注册"，增加邮箱收集模态框
-   - 水平导航菜单：顶部添加三个锚点链接（课程概览、实战项目、讲师介绍），平滑滚动
-   - 代码复制功能：每个项目卡片增加"复制初始代码"按钮
-   - 回到顶部按钮：右下角悬浮圆形按钮
-   - 上一节/下一节按钮：每个项目底部添加顺序跳转按钮
 
-2. **布局重构**：
-   - 左侧固定侧边栏（宽度260px）：列出全部章节，支持锚点跳转，自动高亮当前章节
-   - 主区域布局：最大宽度1400px居中，项目卡片两列网格布局
-   - 代码块统一高亮：深色背景，Prism.js语法高亮
+### 🔴 高优先级
+1. **SEO基础补齐**：更新<head>中的title、meta description、keywords、author
+2. **点击反馈优化**：开始学习按钮添加loading状态和disabled
+3. **环境加载失败降级**：8秒超时后显示友好提示条
 
-3. **删除内容**：
-   - 原有的"立即注册"按钮
-   - 原有的单列布局限制
-   - 右侧快速跳转面板（由左侧侧边栏替代）
+### 🟡 中优先级
+4. **课程设计者简介**：页面底部添加<details>折叠区域
+5. **学习进度本地存储**：localStorage记录已完成项目，显示✅角标
+6. **运行示例代码测试**：验证环境是否正常
+
+### 🟢 低优先级
+7. **sitemap.xml和robots.txt**：SEO友好
+8. **结构化数据JSON-LD**：在<head>中追加
 
 ## Impact
-- Affected pages: 首页（唯一页面）
-- Affected code: Home.tsx, Sidebar.tsx, App.tsx, index.css
-- Technologies: React + TypeScript + Tailwind CSS + Prism.js
+- Affected code: index.html, 现有页面JS逻辑
+- 不影响任何CSS样式和布局结构
 
 ## ADDED Requirements
 
-### Requirement: R1 - 获取项目代码功能
-点击"获取项目代码"按钮，弹出模态框收集用户信息。
+### Requirement: SEO基础补齐
+在<head>中添加meta标签。
 
-#### Scenario: 获取代码
-- **WHEN** 用户点击"获取项目代码"按钮
-- **THEN** 弹出模态框，包含姓名、邮箱字段及提交按钮
-- **AND** 若任一字段为空，显示红色提示"请填写此项"
-- **AND** 若字段有效，关闭模态框并显示通知"✅ 我们会将代码包发送至您的邮箱（演示模式）"
+#### Scenario: SEO标签
+- **WHEN** 搜索引擎爬虫访问
+- **THEN** title为"Pandas数据分析实战训练营 | 10个实战项目 浏览器内运行代码"
+- **THEN** meta description包含相关关键词
 
-### Requirement: R2 - 水平导航菜单
-页面顶部添加水平导航菜单。
+### Requirement: 按钮点击反馈
+开始学习按钮添加loading状态。
 
-#### Scenario: 导航
-- **WHEN** 用户点击顶部导航的"课程概览"/"实战项目"/"讲师介绍"
-- **THEN** 页面平滑滚动到对应区域
+#### Scenario: 按钮点击
+- **WHEN** 用户点击"开始学习"按钮
+- **THEN** 按钮文字变为"⏳ 加载中..."并设置disabled
+- **THEN** 防止重复点击
 
-### Requirement: R3 - 复制初始代码
-每个项目卡片增加复制初始代码功能。
+### Requirement: 环境加载失败降级
+加载超时时显示友好提示。
 
-#### Scenario: 复制代码
-- **WHEN** 用户点击某项目卡片上的"📋 复制代码"按钮
-- **THEN** 将该项目的特定初始化代码复制到剪贴板
-- **AND** 显示通知"✅ 已复制代码模板"
+#### Scenario: 加载失败
+- **WHEN** Pyodide加载超时（>8秒）
+- **THEN** 显示可关闭的提示条
 
-### Requirement: R4 - 左侧侧边栏锚点导航
-左侧固定侧边栏列出全部章节。
+### Requirement: 课程设计者简介
+页面底部添加可折叠区域。
 
-#### Scenario: 侧边栏导航
-- **WHEN** 页面滚动时，侧边栏中对应章节的链接自动高亮
-- **WHEN** 用户点击侧边栏中的任意章节链接
-- **THEN** 页面平滑滚动到该章节
+#### Scenario: 展开简介
+- **WHEN** 用户点击"课程设计者"
+- **THEN** 展开显示简介内容
 
-### Requirement: R5 - 上一节/下一节按钮
-每个项目底部添加顺序跳转按钮。
+### Requirement: 学习进度存储
+localStorage记录已完成项目。
 
-#### Scenario: 顺序跳转
-- **WHEN** 用户位于某个实战项目模块底部
-- **THEN** 显示"← 上一节"和"下一节 →"按钮（第一个项目无上一节，最后一个项目无下一节）
-- **AND** 点击按钮滚动到相邻的项目模块
+#### Scenario: 标记完成
+- **WHEN** 用户点击"标记完成"
+- **THEN** localStorage保存项目ID
+- **THEN** 刷新后显示✅角标
 
-### Requirement: R6 - 回到顶部按钮
-右下角悬浮回到顶部按钮。
+### Requirement: 环境测试按钮
+代码编辑器上方增加测试按钮。
 
-#### Scenario: 回到顶部
-- **WHEN** 页面滚动距离 > 300px
-- **THEN** 右下角显示圆形"↑"按钮
-- **WHEN** 用户点击该按钮
-- **THEN** 页面平滑滚动回顶部
+#### Scenario: 测试环境
+- **WHEN** 用户点击"测试运行"
+- **THEN** 运行import pandas测试代码
+- **THEN** 显示成功或失败提示
 
-### Requirement: R7 - 代码块统一高亮
-所有代码块应用语法高亮。
+### Requirement: sitemap.xml和robots.txt
+创建SEO文件。
 
-#### Scenario: 代码高亮
-- **THEN** 所有代码块应用 Prism.js Python 语法高亮
-- **AND** 深色背景（#1e1e1e）
-- **AND** 关键字、字符串、注释分别着色
-- **AND** 支持横向滚动
+#### Scenario: 搜索引擎访问
+- **WHEN** 搜索引擎爬虫访问
+- **THEN** robots.txt允许抓取
+- **THEN** sitemap.xml提供URL列表
 
-## MODIFIED Requirements
+### Requirement: 结构化数据
+在<head>添加JSON-LD。
 
-### Requirement: 页面布局
-**原要求**：单列布局，无最大宽度限制
-**修改为**：主容器最大宽度1400px居中；实战项目区域采用两列网格布局（gap: 24px）
-
-### Requirement: 按钮文字
-**原要求**："立即注册"
-**修改为**：改为"获取项目代码"
-
-### Requirement: 侧边栏
-**原要求**：无左侧导航
-**修改为**：添加固定左侧侧边栏（宽度280px），主内容区设置margin-left: 280px
-
-## REMOVED Requirements
-
-### Requirement: 右侧快速跳转面板
-**Reason**: 与左侧侧边栏功能重叠
-**Migration**: 使用左侧侧边栏 + 上下节按钮替代
-
-### Requirement: 原有单列卡片布局
-**Reason**: 空间利用率低
-**Migration**: 改为两列网格布局
+#### Scenario: 结构化数据
+- **WHEN** 搜索引擎解析页面
+- **THEN** JSON-LD提供课程列表信息

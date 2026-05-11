@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { ArrowRight, CheckCircle, Clock, BookOpen, Target, Zap, TrendingUp, Layers, Database, BarChart3, GitBranch } from 'lucide-react';
+import { useState } from 'react';
 
 const learningPath = [
   {
@@ -84,6 +85,17 @@ const skills = [
 ];
 
 export function LearningPath() {
+  const navigate = useNavigate();
+  const [startLearningState, setStartLearningState] = useState({ disabled: false, text: '' });
+
+  const handleStartLearning = () => {
+    setStartLearningState({ disabled: true, text: '⏳ 加载中...' });
+    setTimeout(() => {
+      alert('课程环境启动中，首次稍慢');
+    }, 2000);
+    navigate('/courses');
+  };
+
   return (
     <Layout>
       <div className="pt-4 pb-12">
@@ -207,13 +219,14 @@ export function LearningPath() {
                         </div>
                         
                         <div className="mt-4 flex justify-end">
-                          <Link
-                            to={`/courses/${phase.courses[0].id}`}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
+                          <button
+                            onClick={handleStartLearning}
+                            disabled={startLearningState.disabled}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-xl transition-all disabled:opacity-70"
                           >
-                            开始学习
+                            {startLearningState.text || '开始学习'}
                             <ArrowRight size={16} />
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>

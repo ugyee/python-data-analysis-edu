@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, RefreshCw } from 'lucide-react';
-
-interface QuizQuestion {
-  id: string;
-  type: 'choice' | 'practical';
-  question: string;
-  options?: string[];
-  correctAnswer: number | string;
-  explanation: string;
-}
+import { QuizQuestion } from '@/types';
 
 interface LessonQuizProps {
   questions: QuizQuestion[];

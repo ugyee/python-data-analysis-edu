@@ -73,7 +73,7 @@ export interface Quiz {
 
 export interface QuizQuestion {
   id: string;
-  type: 'choice' | 'code';
+  type: 'choice' | 'practical';
   question: string;
   options?: (string | number)[];
   correctAnswer?: string | number;

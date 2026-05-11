@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChevronLeft, ChevronRight, Home, BookOpen, ArrowLeft } from 'lucide-react';
 import { Layout } from '@/components/Layout';
+import { LessonQuiz } from '@/components/LessonQuiz';
 
 export function Learn() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
@@ -136,13 +137,19 @@ export function Learn() {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-soft p-5 mb-6">
-            <div className="prose prose-slate max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {currentLesson.content || '暂无内容'}
-              </ReactMarkdown>
+          {currentLesson.type === 'quiz' && course.quizQuestions ? (
+            <div className="bg-white rounded-2xl shadow-soft p-5 mb-6">
+              <LessonQuiz questions={course.quizQuestions} />
             </div>
-          </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-soft p-5 mb-6">
+              <div className="prose prose-slate max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {currentLesson.content || '暂无内容'}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-4 border-t border-primary-100">
             <div>

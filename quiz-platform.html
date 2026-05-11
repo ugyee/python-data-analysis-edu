@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据分析学习平台 - 章节测验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-dark: #1e1e2e;
+            --bg-card: #2a2a3e;
+            --bg-card-hover: #35354a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border-color: #3d3d5c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 左侧课程列表 */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .course-list {
+            list-style: none;
+        }
+
+        .course-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .course-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .course-item.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .course-item span:first-child {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* 右侧测验区域 */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .quiz-header {
+            margin-bottom: 30px;
+        }
+
+        .quiz-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary-color), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .quiz-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* 题目卡片 */
+        .question-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .question-number {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .question-type {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .question-type.multiple {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+        .question-type.practical {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        .question-text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        /* 选项列表 */
+        .options-list {
+            list-style: none;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .option-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .option-item.selected {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .option-item.correct {
+            border-color: var(--success-color);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .option-item.incorrect {
+            border-color: var(--error-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .option-radio {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .option-label {
+            font-size: 14px;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .result-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .result-icon.correct {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .result-icon.incorrect {
+            background: var(--error-color);
+            color: white;
+        }
+
+        /* 实操题输入 */
+        .practical-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Consolas', monospace;
+            transition: all 0.2s ease;
+        }
+
+        .practical-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .practical-input.correct {
+            border-color: var(--success-color);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .practical-input.incorrect {
+            border-color: var(--error-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* 正确答案显示 */
+        .correct-answer {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .correct-answer.success {
+            background: rgba(34, 197, 94, 0.15);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .correct-answer.error {
+            background: rgba(239, 68, 68, 0.15);
+            border-left: 4px solid var(--error-color);
+        }
+
+        .correct-answer span:first-child {
+            font-weight: 600;
+            margin-right: 8px;
+            color: var(--text-secondary);
+        }
+
+        .correct-answer span:last-child {
+            font-family: 'Consolas', monospace;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* 结果统计 */
+        .result-summary {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stat-value.correct {
+            color: var(--success-color);
+        }
+
+        .stat-value.incorrect {
+            color: var(--error-color);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .score-fill.high {
+            background: linear-gradient(90deg, var(--success-color), #4ade80);
+        }
+
+        .score-fill.medium {
+            background: linear-gradient(90deg, var(--warning-color), #fbbf24);
+        }
+
+        .score-fill.low {
+            background: linear-gradient(90deg, var(--error-color), #f87171);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 15px;
+            }
+
+            .course-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .course-item {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+            }
+
+            .quiz-header h1 {
+                font-size: 22px;
+            }
+
+            .question-card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧课程列表 -->
+        <aside class="sidebar">
+            <h2>📚 课程测验</h2>
+            <ul class="course-list" id="courseList">
+                <!-- 动态生成 -->
+            </ul>
+        </aside>
+
+        <!-- 右侧测验区域 -->
+        <main class="main-content">
+            <div class="quiz-header">
+                <h1 id="courseTitle">数据清洗实战</h1>
+                <p id="courseDesc">请完成以下测验，检验你的学习成果</p>
+            </div>
+
+            <!-- 结果统计 -->
+            <div class="result-summary" id="resultSummary" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-value correct" id="correctCount">0</div>
+                    <div class="stat-label">正确</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value incorrect" id="incorrectCount">0</div>
+                    <div class="stat-label">错误</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">得分</div>
+                </div>
+                <div class="score-bar">
+                    <div class="score-fill" id="scoreBar"></div>
+                </div>
+            </div>
+
+            <!-- 题目区域 -->
+            <div id="quizContent">
+                <!-- 动态生成题目 -->
+            </div>
+
+            <!-- 按钮区域 -->
+            <div class="btn-group">
+                <button class="btn btn-primary" id="submitBtn">
+                    📝 提交测验
+                </button>
+                <button class="btn btn-secondary" id="resetBtn">
+                    🔄 重新答题
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 测验数据
+        const quizData = {
+            'course1': {
+                title: '数据清洗实战',
+                description: '检验你对数据清洗核心概念的掌握',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: '在pandas中，用于检测DataFrame中缺失值的常用函数是？',
+                        options: [
+                            { key: 'A', text: 'isnull()' },
+                            { key: 'B', text: 'dropna()' },
+                            { key: 'C', text: 'fillna()' },
+                            { key: 'D', text: 'notnull()' }
+                        ],
+                        answer: 'A'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪种方法通常用于处理数值型缺失值？',
+                        options: [
+                            { key: 'A', text: '使用中位数填充' },
+                            { key: 'B', text: '使用字符串"NA"填充' },
+                            { key: 'C', text: '直接删除所有包含缺失值的列' },
+                            { key: 'D', text: '使用最大值填充' }
+                        ],
+                        answer: 'A'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '在异常值检测中，IQR方法通常将超出多少倍IQR范围的值视为异常值？',
+                        options: [
+                            { key: 'A', text: '1倍' },
+                            { key: 'B', text: '1.5倍' },
+                            { key: 'C', text: '2倍' },
+                            { key: 'D', text: '3倍' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'practical',
+                        question: '给定DataFrame df，写出删除所有包含缺失值行的代码。（使用一行pandas代码）',
+                        answer: 'df.dropna()',
+                        hint: '提示：使用dropna方法'
+                    }
+                ]
+            },
+            'course2': {
+                title: '分组聚合分析',
+                description: '检验你对分组聚合操作的理解',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: '在pandas中，以下哪个方法用于按指定列进行分组？',
+                        options: [
+                            { key: 'A', text: 'group()' },
+                            { key: 'B', text: 'groupby()' },
+                            { key: 'C', text: 'aggregate()' },
+                            { key: 'D', text: 'split()' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪个不是常用的聚合函数？',
+                        options: [
+                            { key: 'A', text: 'sum()' },
+                            { key: 'B', text: 'mean()' },
+                            { key: 'C', text: 'concat()' },
+                            { key: 'D', text: 'count()' }
+                        ],
+                        answer: 'C'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '使用agg()方法时，可以为不同列指定不同的聚合函数吗？',
+                        options: [
+                            { key: 'A', text: '不可以，只能使用统一的聚合函数' },
+                            { key: 'B', text: '可以，通过字典形式指定' },
+                            { key: 'C', text: '只支持两个列的不同聚合' },
+                            { key: 'D', text: '需要使用apply方法才能实现' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'practical',
+                        question: '对DataFrame df按"类别"列分组后，计算"销售额"列的总和，写出代码。',
+                        answer: 'df.groupby("类别")["销售额"].sum()',
+                        hint: '提示：groupby + 列选择 + 聚合函数'
+                    }
+                ]
+            },
+            'course3': {
+                title: '购物篮分析',
+                description: '检验你对关联规则挖掘的掌握',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: '关联规则中的"支持度"指的是？',
+                        options: [
+                            { key: 'A', text: '购买A的顾客同时购买B的比例' },
+                            { key: 'B', text: '同时购买A和B的交易占总交易的比例' },
+                            { key: 'C', text: '购买B的顾客同时购买A的比例' },
+                            { key: 'D', text: '规则的置信度与期望置信度的比值' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪个是经典的关联规则挖掘算法？',
+                        options: [
+                            { key: 'A', text: 'K-Means' },
+                            { key: 'B', text: 'Apriori' },
+                            { key: 'C', text: '决策树' },
+                            { key: 'D', text: '随机森林' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '当提升度（Lift）> 1时，表示？',
+                        options: [
+                            { key: 'A', text: 'A和B是负相关的' },
+                            { key: 'B', text: 'A和B是独立的' },
+                            { key: 'C', text: 'A和B是正相关的，规则有效' },
+                            { key: 'D', text: '规则没有实际意义' }
+                        ],
+                        answer: 'C'
+                    },
+                    {
+                        type: 'practical',
+                        question: '某超市交易数据中，牛奶出现了100次，面包出现了80次，牛奶和面包同时出现了50次。计算牛奶和面包的支持度（结果保留两位小数）。',
+                        answer: '0.50',
+                        hint: '支持度 = 同时出现次数 / 某商品出现次数'
+                    }
+                ]
+            },
+            'course4': {
+                title: '客户聚类分析',
+                description: '检验你对聚类分析的理解',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: 'K-Means算法中，K值代表什么？',
+                        options: [
+                            { key: 'A', text: '迭代次数' },
+                            { key: 'B', text: '聚类中心的数量' },
+                            { key: 'C', text: '数据维度' },
+                            { key: 'D', text: '样本数量' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪个方法可用于确定K-Means的最佳K值？',
+                        options: [
+                            { key: 'A', text: '肘部法则' },
+                            { key: 'B', text: 'Z-score' },
+                            { key: 'C', text: 'IQR方法' },
+                            { key: 'D', text: 't检验' }
+                        ],
+                        answer: 'A'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '在进行K-Means聚类前，为什么需要对数据进行标准化处理？',
+                        options: [
+                            { key: 'A', text: '为了减少数据量' },
+                            { key: 'B', text: '为了消除量纲差异的影响' },
+                            { key: 'C', text: '为了增加数据噪声' },
+                            { key: 'D', text: '为了降低计算复杂度' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'practical',
+                        question: '写出使用scikit-learn创建K-Means聚类模型并设置3个聚类中心的代码。',
+                        answer: 'from sklearn.cluster import KMeans; kmeans = KMeans(n_clusters=3)',
+                        hint: '提示：导入KMeans类，创建实例时指定n_clusters参数'
+                    }
+                ]
+            },
+            'course5': {
+                title: '数据可视化',
+                description: '检验你对数据可视化的掌握',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: '在Matplotlib中，以下哪个函数用于创建折线图？',
+                        options: [
+                            { key: 'A', text: 'plt.bar()' },
+                            { key: 'B', text: 'plt.plot()' },
+                            { key: 'C', text: 'plt.scatter()' },
+                            { key: 'D', text: 'plt.hist()' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '用于显示数据分布情况的图表是？',
+                        options: [
+                            { key: 'A', text: '折线图' },
+                            { key: 'B', text: '柱状图' },
+                            { key: 'C', text: '直方图' },
+                            { key: 'D', text: '散点图' }
+                        ],
+                        answer: 'C'
+                    },
+                    {
+                        type: 'multiple',
+                        question: 'Seaborn是基于哪个库构建的？',
+                        options: [
+                            { key: 'A', text: 'Plotly' },
+                            { key: 'B', text: 'Matplotlib' },
+                            { key: 'C', text: 'ggplot2' },
+                            { key: 'D', text: 'Bokeh' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'practical',
+                        question: '写出在Matplotlib中设置图表标题为"销售趋势"的代码。',
+                        answer: 'plt.title("销售趋势")',
+                        hint: '提示：使用plt.title()函数'
+                    }
+                ]
+            },
+            'course6': {
+                title: 'A/B测试分析',
+                description: '检验你对A/B测试的理解',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: 'A/B测试中，p值的含义是？',
+                        options: [
+                            { key: 'A', text: '实验成功的概率' },
+                            { key: 'B', text: '在原假设成立的情况下，观察到当前结果或更极端结果的概率' },
+                            { key: 'C', text: '两组数据的差异大小' },
+                            { key: 'D', text: '样本量的大小' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '通常将显著性水平设置为多少？',
+                        options: [
+                            { key: 'A', text: '0.01' },
+                            { key: 'B', text: '0.05' },
+                            { key: 'C', text: '0.10' },
+                            { key: 'D', text: '0.15' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: 'A/B测试中，实验组和对照组的主要区别是？',
+                        options: [
+                            { key: 'A', text: '样本量不同' },
+                            { key: 'B', text: '实验组接受新方案，对照组接受原方案' },
+                            { key: 'C', text: '数据收集方式不同' },
+                            { key: 'D', text: '分析方法不同' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'practical',
+                        question: '当p值为0.03时，是否拒绝原假设？（填写"是"或"否"）',
+                        answer: '是',
+                        hint: '提示：比较p值与显著性水平0.05'
+                    }
+                ]
+            },
+            'course7': {
+                title: '时间序列分析',
+                description: '检验你对时间序列分析的掌握',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: '时间序列数据的三个主要组成部分是？',
+                        options: [
+                            { key: 'A', text: '趋势、季节性、残差' },
+                            { key: 'B', text: '均值、方差、标准差' },
+                            { key: 'C', text: '最大值、最小值、中位数' },
+                            { key: 'D', text: '线性、非线性、随机' }
+                        ],
+                        answer: 'A'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪个是常用的时间序列预测模型？',
+                        options: [
+                            { key: 'A', text: 'K-Means' },
+                            { key: 'B', text: 'ARIMA' },
+                            { key: 'C', text: '决策树' },
+                            { key: 'D', text: '支持向量机' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '平稳时间序列的特点是？',
+                        options: [
+                            { key: 'A', text: '均值随时间变化' },
+                            { key: 'B', text: '方差随时间变化' },
+                            { key: 'C', text: '均值和方差均不随时间变化' },
+                            { key: 'D', text: '存在明显的趋势' }
+                        ],
+                        answer: 'C'
+                    },
+                    {
+                        type: 'practical',
+                        question: '写出使用pandas将字符串日期列转换为datetime类型的代码（假设列名为"日期"）。',
+                        answer: 'df["日期"] = pd.to_datetime(df["日期"])',
+                        hint: '提示：使用pd.to_datetime()函数'
+                    }
+                ]
+            },
+            'course8': {
+                title: '特征工程',
+                description: '检验你对特征工程的理解',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: '以下哪种方法属于特征缩放技术？',
+                        options: [
+                            { key: 'A', text: 'One-Hot编码' },
+                            { key: 'B', text: '标准化（Standardization）' },
+                            { key: 'C', text: '标签编码' },
+                            { key: 'D', text: '特征选择' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '对于类别型特征，以下哪种编码方式会产生稀疏矩阵？',
+                        options: [
+                            { key: 'A', text: '标签编码' },
+                            { key: 'B', text: 'One-Hot编码' },
+                            { key: 'C', text: '频率编码' },
+                            { key: 'D', text: '目标编码' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪个不是常用的特征选择方法？',
+                        options: [
+                            { key: 'A', text: '相关性分析' },
+                            { key: 'B', text: '卡方检验' },
+                            { key: 'C', text: 'PCA降维' },
+                            { key: 'D', text: '随机森林特征重要性' }
+                        ],
+                        answer: 'C'
+                    },
+                    {
+                        type: 'practical',
+                        question: '写出使用sklearn对特征进行标准化的代码（假设特征矩阵为X）。',
+                        answer: 'from sklearn.preprocessing import StandardScaler; scaler = StandardScaler(); X_scaled = scaler.fit_transform(X)',
+                        hint: '提示：导入StandardScaler类'
+                    }
+                ]
+            },
+            'course9': {
+                title: '异常值检测',
+                description: '检验你对异常值检测的掌握',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: 'Z-score方法中，通常将Z值的绝对值大于多少视为异常值？',
+                        options: [
+                            { key: 'A', text: '1' },
+                            { key: 'B', text: '2' },
+                            { key: 'C', text: '3' },
+                            { key: 'D', text: '4' }
+                        ],
+                        answer: 'C'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪种方法不属于异常值检测算法？',
+                        options: [
+                            { key: 'A', text: 'IQR方法' },
+                            { key: 'B', text: 'DBSCAN' },
+                            { key: 'C', text: '隔离森林' },
+                            { key: 'D', text: '线性回归' }
+                        ],
+                        answer: 'D'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '箱线图中，上下须通常延伸到多少倍IQR的位置？',
+                        options: [
+                            { key: 'A', text: '1倍' },
+                            { key: 'B', text: '1.5倍' },
+                            { key: 'C', text: '2倍' },
+                            { key: 'D', text: '3倍' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'practical',
+                        question: '计算数据集[1, 2, 3, 4, 5, 100]的Z-score（保留两位小数，计算100的Z-score）',
+                        answer: '2.24',
+                        hint: '提示：Z = (x - μ) / σ，先计算均值和标准差'
+                    }
+                ]
+            },
+            'course10': {
+                title: '多数据集合并',
+                description: '检验你对数据集合并操作的掌握',
+                questions: [
+                    {
+                        type: 'multiple',
+                        question: '在pandas中，用于合并两个DataFrame的函数是？',
+                        options: [
+                            { key: 'A', text: 'concat()' },
+                            { key: 'B', text: 'merge()' },
+                            { key: 'C', text: 'join()' },
+                            { key: 'D', text: 'combine()' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: '以下哪种连接方式会保留左表的所有行？',
+                        options: [
+                            { key: 'A', text: '内连接' },
+                            { key: 'B', text: '左连接' },
+                            { key: 'C', text: '外连接' },
+                            { key: 'D', text: '交叉连接' }
+                        ],
+                        answer: 'B'
+                    },
+                    {
+                        type: 'multiple',
+                        question: 'concat()函数的默认轴方向是？',
+                        options: [
+                            { key: 'A', text: 'axis=0（按行合并）' },
+                            { key: 'B', text: 'axis=1（按列合并）' },
+                            { key: 'C', text: 'axis=2（按深度合并）' },
+                            { key: 'D', text: '需要手动指定' }
+                        ],
+                        answer: 'A'
+                    },
+                    {
+                        type: 'practical',
+                        question: '写出将DataFrame df1和df2按"用户ID"列进行内连接的代码。',
+                        answer: 'pd.merge(df1, df2, on="用户ID", how="inner")',
+                        hint: '提示：使用pd.merge()，指定on和how参数'
+                    }
+                ]
+            }
+        };
+
+        // 课程列表
+        const courses = [
+            { id: 'course1', name: '数据清洗实战' },
+            { id: 'course2', name: '分组聚合分析' },
+            { id: 'course3', name: '购物篮分析' },
+            { id: 'course4', name: '客户聚类分析' },
+            { id: 'course5', name: '数据可视化' },
+            { id: 'course6', name: 'A/B测试分析' },
+            { id: 'course7', name: '时间序列分析' },
+            { id: 'course8', name: '特征工程' },
+            { id: 'course9', name: '异常值检测' },
+            { id: 'course10', name: '多数据集合并' }
+        ];
+
+        // 当前选中的课程
+        let currentCourse = 'course1';
+        let submitted = false;
+
+        // DOM元素
+        const courseList = document.getElementById('courseList');
+        const courseTitle = document.getElementById('courseTitle');
+        const courseDesc = document.getElementById('courseDesc');
+        const quizContent = document.getElementById('quizContent');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const resultSummary = document.getElementById('resultSummary');
+        const correctCount = document.getElementById('correctCount');
+        const incorrectCount = document.getElementById('incorrectCount');
+        const score = document.getElementById('score');
+        const scoreBar = document.getElementById('scoreBar');
+
+        // 初始化课程列表
+        function initCourseList() {
+            courses.forEach((course, index) => {
+                const li = document.createElement('li');
+                li.className = `course-item ${course.id === currentCourse ? 'active' : ''}`;
+                li.dataset.courseId = course.id;
+                li.innerHTML = `<span>${index + 1}</span><span>${course.name}</span>`;
+                li.addEventListener('click', () => switchCourse(course.id));
+                courseList.appendChild(li);
+            });
+        }
+
+        // 切换课程
+        function switchCourse(courseId) {
+            currentCourse = courseId;
+            submitted = false;
+            
+            // 更新课程列表样式
+            document.querySelectorAll('.course-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.courseId === courseId) {
+                    item.classList.add('active');
+                }
+            });
+
+            // 更新标题和描述
+            const data = quizData[courseId];
+            courseTitle.textContent = data.title;
+            courseDesc.textContent = data.description;
+
+            // 隐藏结果统计
+            resultSummary.style.display = 'none';
+
+            // 渲染题目
+            renderQuestions();
+        }
+
+        // 渲染题目
+        function renderQuestions() {
+            const data = quizData[currentCourse];
+            let html = '';
+
+            data.questions.forEach((question, index) => {
+                const questionId = `question-${index}`;
+                if (question.type === 'multiple') {
+                    html += `
+                        <div class="question-card" id="${questionId}">
+                            <div class="question-header">
+                                <span class="question-number">${index + 1}</span>
+                                <span class="question-type multiple">选择题</span>
+                            </div>
+                            <p class="question-text">${question.question}</p>
+                            <ul class="options-list">
+                                ${question.options.map(option => `
+                                    <li class="option-item" data-option="${option.key}">
+                                        <input type="radio" name="${questionId}" value="${option.key}" class="option-radio" ${submitted ? 'disabled' : ''}>
+                                        <span class="option-label">${option.key}. ${option.text}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="question-card" id="${questionId}">
+                            <div class="question-header">
+                                <span class="question-number">${index + 1}</span>
+                                <span class="question-type practical">实操题</span>
+                            </div>
+                            <p class="question-text">${question.question}</p>
+                            <input type="text" class="practical-input" id="practical-${index}" placeholder="请输入答案..." ${submitted ? 'disabled' : ''}>
+                            <p style="margin-top: 8px; font-size: 12px; color: #a0a0b0;">${question.hint}</p>
+                        </div>
+                    `;
+                }
+            });
+
+            quizContent.innerHTML = html;
+        }
+
+        // 提交测验
+        function submitQuiz() {
+            if (submitted) return;
+            submitted = true;
+
+            const data = quizData[currentCourse];
+            let correct = 0;
+            let incorrect = 0;
+
+            data.questions.forEach((question, index) => {
+                const questionId = `question-${index}`;
+                const card = document.getElementById(questionId);
+
+                if (question.type === 'multiple') {
+                    // 选择题判分
+                    const selected = card.querySelector(`input[name="${questionId}"]:checked`);
+                    const options = card.querySelectorAll('.option-item');
+
+                    options.forEach(option => {
+                        const optionKey = option.dataset.option;
+                        if (optionKey === question.answer) {
+                            option.classList.add('correct');
+                            option.innerHTML += '<span class="result-icon correct">✓</span>';
+                        } else if (selected && selected.value === optionKey) {
+                            option.classList.add('incorrect');
+                            option.innerHTML += '<span class="result-icon incorrect">✗</span>';
+                        }
+                    });
+
+                    // 显示正确答案
+                    const answerDiv = document.createElement('div');
+                    answerDiv.className = `correct-answer ${selected && selected.value === question.answer ? 'success' : 'error'}`;
+                    answerDiv.innerHTML = `<span>正确答案：</span><span>${question.answer}</span>`;
+                    card.appendChild(answerDiv);
+
+                    if (selected && selected.value === question.answer) {
+                        correct++;
+                    } else {
+                        incorrect++;
+                    }
+
+                    // 禁用单选框
+                    card.querySelectorAll('input[type="radio"]').forEach(input => {
+                        input.disabled = true;
+                    });
+                } else {
+                    // 实操题判分
+                    const input = document.getElementById(`practical-${index}`);
+                    const userAnswer = input.value.trim().toLowerCase();
+                    const correctAnswer = question.answer.toLowerCase();
+
+                    if (userAnswer === correctAnswer) {
+                        input.classList.add('correct');
+                        correct++;
+                    } else {
+                        input.classList.add('incorrect');
+                        incorrect++;
+                    }
+
+                    // 显示正确答案
+                    const answerDiv = document.createElement('div');
+                    answerDiv.className = userAnswer === correctAnswer ? 'correct-answer success' : 'correct-answer error';
+                    answerDiv.innerHTML = `<span>正确答案：</span><span>${question.answer}</span>`;
+                    card.appendChild(answerDiv);
+
+                    input.disabled = true;
+                }
+            });
+
+            // 更新结果统计
+            correctCount.textContent = correct;
+            incorrectCount.textContent = incorrect;
+            const totalScore = Math.round((correct / data.questions.length) * 100);
+            score.textContent = totalScore;
+
+            // 更新进度条
+            scoreBar.style.width = `${totalScore}%`;
+            if (totalScore >= 80) {
+                scoreBar.className = 'score-fill high';
+            } else if (totalScore >= 60) {
+                scoreBar.className = 'score-fill medium';
+            } else {
+                scoreBar.className = 'score-fill low';
+            }
+
+            resultSummary.style.display = 'flex';
+        }
+
+        // 重置测验
+        function resetQuiz() {
+            submitted = false;
+            resultSummary.style.display = 'none';
+            renderQuestions();
+        }
+
+        // 初始化
+        initCourseList();
+        renderQuestions();
+
+        // 事件监听
+        submitBtn.addEventListener('click', submitQuiz);
+        resetBtn.addEventListener('click', resetQuiz);
+    </script>
+</body>
+</html>

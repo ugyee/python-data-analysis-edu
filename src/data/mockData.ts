@@ -391,6 +391,54 @@ export const mockCourseDetails: Record<string, CourseDetail> = {
     coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Customer clustering visualization with colorful dots grouped in circles&image_size=landscape_16_9',
     totalLessons: 8,
     duration: 240,
+    quizQuestions: [
+      {
+        id: 'customer-clustering-q1',
+        type: 'choice',
+        question: 'K-Means算法中的K值表示什么？',
+        options: [
+          '迭代次数',
+          '聚类中心的数量',
+          '数据维度',
+          '样本数量'
+        ],
+        correctAnswer: 1,
+        explanation: 'K值表示要将数据分成的簇的数量，即聚类中心的数量。'
+      },
+      {
+        id: 'customer-clustering-q2',
+        type: 'choice',
+        question: '肘部法则用于确定什么？',
+        options: [
+          '数据的维度',
+          '最佳聚类数K',
+          '初始聚类中心',
+          '收敛阈值'
+        ],
+        correctAnswer: 1,
+        explanation: '肘部法则通过绘制不同K值的SSE曲线，找到曲线变平缓的点作为最佳K值。'
+      },
+      {
+        id: 'customer-clustering-q3',
+        type: 'choice',
+        question: '在K-Means聚类前为什么需要标准化数据？',
+        options: [
+          '减少数据量',
+          '消除量纲差异的影响',
+          '增加数据噪声',
+          '降低计算复杂度'
+        ],
+        correctAnswer: 1,
+        explanation: '标准化可以确保各特征在相同尺度上，避免数值较大的特征主导聚类结果。'
+      },
+      {
+        id: 'customer-clustering-q4',
+        type: 'practical',
+        question: '写出使用scikit-learn创建K-Means模型并设置5个聚类中心的代码。',
+        correctAnswer: 'KMeans(n_clusters=5)',
+        explanation: '创建KMeans实例时通过n_clusters参数指定聚类数量。'
+      }
+    ],
     chapters: [
       {
         id: 'ch1',
@@ -420,6 +468,54 @@ export const mockCourseDetails: Record<string, CourseDetail> = {
     coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Beautiful data visualization dashboard with multiple chart types&image_size=landscape_16_9',
     totalLessons: 10,
     duration: 300,
+    quizQuestions: [
+      {
+        id: 'data-visualization-q1',
+        type: 'choice',
+        question: 'Matplotlib中创建折线图应该使用哪个函数？',
+        options: [
+          'plt.bar()',
+          'plt.plot()',
+          'plt.scatter()',
+          'plt.hist()'
+        ],
+        correctAnswer: 1,
+        explanation: 'plt.plot()用于绘制折线图，plt.bar()是柱状图，plt.scatter()是散点图，plt.hist()是直方图。'
+      },
+      {
+        id: 'data-visualization-q2',
+        type: 'choice',
+        question: 'Seaborn是基于哪个库构建的？',
+        options: [
+          'Plotly',
+          'Matplotlib',
+          'ggplot2',
+          'Bokeh'
+        ],
+        correctAnswer: 1,
+        explanation: 'Seaborn是基于Matplotlib构建的高级统计可视化库。'
+      },
+      {
+        id: 'data-visualization-q3',
+        type: 'choice',
+        question: '用于显示数据分布情况的图表是？',
+        options: [
+          '折线图',
+          '柱状图',
+          '直方图',
+          '散点图'
+        ],
+        correctAnswer: 2,
+        explanation: '直方图用于展示数据的分布情况，显示不同区间的数据频率。'
+      },
+      {
+        id: 'data-visualization-q4',
+        type: 'practical',
+        question: '写出在Matplotlib中设置图表标题为"销售趋势"的代码。',
+        correctAnswer: 'plt.title("销售趋势")',
+        explanation: '使用plt.title()函数设置图表标题。'
+      }
+    ],
     chapters: [
       {
         id: 'ch1',
@@ -450,6 +546,54 @@ export const mockCourseDetails: Record<string, CourseDetail> = {
     coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=A/B testing comparison with two versions, split test visualization&image_size=landscape_16_9',
     totalLessons: 6,
     duration: 180,
+    quizQuestions: [
+      {
+        id: 'ab-testing-q1',
+        type: 'choice',
+        question: 'A/B测试中，p值的含义是？',
+        options: [
+          '实验成功的概率',
+          '在原假设成立的情况下，观察到当前结果或更极端结果的概率',
+          '两组数据的差异大小',
+          '样本量的大小'
+        ],
+        correctAnswer: 1,
+        explanation: 'p值表示在原假设（两组无差异）成立时，观察到当前数据或更极端数据的概率。'
+      },
+      {
+        id: 'ab-testing-q2',
+        type: 'choice',
+        question: '通常将显著性水平设置为多少？',
+        options: [
+          '0.01',
+          '0.05',
+          '0.10',
+          '0.15'
+        ],
+        correctAnswer: 1,
+        explanation: '通常将显著性水平α设置为0.05，即当p<0.05时拒绝原假设。'
+      },
+      {
+        id: 'ab-testing-q3',
+        type: 'choice',
+        question: 'A/B测试中，实验组和对照组的主要区别是？',
+        options: [
+          '样本量不同',
+          '实验组接受新方案，对照组接受原方案',
+          '数据收集方式不同',
+          '分析方法不同'
+        ],
+        correctAnswer: 1,
+        explanation: '实验组接受待测试的新方案，对照组保持原有方案，通过比较两者差异评估新方案效果。'
+      },
+      {
+        id: 'ab-testing-q4',
+        type: 'practical',
+        question: '当p值为0.03时，是否拒绝原假设？（填写"是"或"否"）',
+        correctAnswer: '是',
+        explanation: 'p值0.03 < 显著性水平0.05，因此拒绝原假设，认为两组存在显著差异。'
+      }
+    ],
     chapters: [
       {
         id: 'ch1',
@@ -479,6 +623,54 @@ export const mockCourseDetails: Record<string, CourseDetail> = {
     coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Time series chart with trend line and forecast, stock market style&image_size=landscape_16_9',
     totalLessons: 9,
     duration: 270,
+    quizQuestions: [
+      {
+        id: 'time-series-q1',
+        type: 'choice',
+        question: '时间序列的四个组成成分不包括？',
+        options: [
+          '趋势',
+          '季节性',
+          '相关性',
+          '随机性'
+        ],
+        correctAnswer: 2,
+        explanation: '时间序列的四个组成成分是：趋势、季节性、周期性和随机性。'
+      },
+      {
+        id: 'time-series-q2',
+        type: 'choice',
+        question: 'ADF检验用于检验时间序列的什么性质？',
+        options: [
+          '季节性',
+          '平稳性',
+          '趋势性',
+          '周期性'
+        ],
+        correctAnswer: 1,
+        explanation: 'ADF检验（Augmented Dickey-Fuller test）用于检验时间序列的平稳性。'
+      },
+      {
+        id: 'time-series-q3',
+        type: 'choice',
+        question: '移动平均的作用是什么？',
+        options: [
+          '预测未来值',
+          '平滑时间序列',
+          '增加波动',
+          '检测异常'
+        ],
+        correctAnswer: 1,
+        explanation: '移动平均可以消除短期波动，使时间序列更加平滑，便于观察趋势。'
+      },
+      {
+        id: 'time-series-q4',
+        type: 'practical',
+        question: '写出使用pandas将字符串日期列"date"转换为datetime类型的代码。',
+        correctAnswer: 'pd.to_datetime(df["date"])',
+        explanation: '使用pd.to_datetime()函数将字符串转换为datetime类型。'
+      }
+    ],
     chapters: [
       {
         id: 'ch1',
@@ -508,6 +700,54 @@ export const mockCourseDetails: Record<string, CourseDetail> = {
     coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Feature engineering pipeline with gears and data transformation&image_size=landscape_16_9',
     totalLessons: 8,
     duration: 240,
+    quizQuestions: [
+      {
+        id: 'feature-engineering-q1',
+        type: 'choice',
+        question: 'StandardScaler的作用是什么？',
+        options: [
+          '归一化到[0,1]',
+          '标准化为均值0方差1',
+          '对数变换',
+          '分箱处理'
+        ],
+        correctAnswer: 1,
+        explanation: 'StandardScaler将特征转换为均值为0，标准差为1的标准正态分布。'
+      },
+      {
+        id: 'feature-engineering-q2',
+        type: 'choice',
+        question: '对类别特征进行独热编码应该使用哪个工具？',
+        options: [
+          'LabelEncoder',
+          'OneHotEncoder',
+          'StandardScaler',
+          'MinMaxScaler'
+        ],
+        correctAnswer: 1,
+        explanation: 'OneHotEncoder将类别特征转换为独热编码形式，适合处理非有序类别。'
+      },
+      {
+        id: 'feature-engineering-q3',
+        type: 'choice',
+        question: 'KNNImputer的作用是什么？',
+        options: [
+          '删除缺失值',
+          '用K近邻填充缺失值',
+          '标准化特征',
+          '编码类别特征'
+        ],
+        correctAnswer: 1,
+        explanation: 'KNNImputer使用K近邻算法来估计和填充缺失值。'
+      },
+      {
+        id: 'feature-engineering-q4',
+        type: 'practical',
+        question: '写出使用sklearn对特征矩阵X进行标准化的代码。',
+        correctAnswer: 'StandardScaler().fit_transform(X)',
+        explanation: '创建StandardScaler实例并调用fit_transform方法对数据进行标准化。'
+      }
+    ],
     chapters: [
       {
         id: 'ch1',
@@ -537,6 +777,54 @@ export const mockCourseDetails: Record<string, CourseDetail> = {
     coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Anomaly detection with red dots among blue dots, outlier visualization&image_size=landscape_16_9',
     totalLessons: 6,
     duration: 180,
+    quizQuestions: [
+      {
+        id: 'anomaly-detection-q1',
+        type: 'choice',
+        question: 'Z-score方法中，通常将Z值的绝对值大于多少视为异常值？',
+        options: [
+          '1',
+          '2',
+          '3',
+          '4'
+        ],
+        correctAnswer: 2,
+        explanation: '通常将Z值绝对值大于3的数据点视为异常值。'
+      },
+      {
+        id: 'anomaly-detection-q2',
+        type: 'choice',
+        question: 'IQR方法中，正常数据的下界是多少？',
+        options: [
+          'Q1 - IQR',
+          'Q1 - 1.5*IQR',
+          'Q3 - 1.5*IQR',
+          'mean - 2*std'
+        ],
+        correctAnswer: 1,
+        explanation: 'IQR方法中，下界 = Q1 - 1.5*IQR，上界 = Q3 + 1.5*IQR。'
+      },
+      {
+        id: 'anomaly-detection-q3',
+        type: 'choice',
+        question: 'Isolation Forest算法的核心思想是什么？',
+        options: [
+          '通过随机分割隔离异常点',
+          '计算数据点的密度',
+          '拟合回归模型',
+          '计算距离矩阵'
+        ],
+        correctAnswer: 0,
+        explanation: 'Isolation Forest通过随机分割来隔离异常点，异常点更容易被孤立。'
+      },
+      {
+        id: 'anomaly-detection-q4',
+        type: 'practical',
+        question: '计算数据集[1, 2, 3, 4, 5, 100]的IQR值（结果为整数）。',
+        correctAnswer: '3',
+        explanation: 'Q1=2, Q3=4.5, IQR=Q3-Q1=2.5，取整为3。'
+      }
+    ],
     chapters: [
       {
         id: 'ch1',
@@ -566,6 +854,54 @@ export const mockCourseDetails: Record<string, CourseDetail> = {
     coverImage: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Multiple data tables merging into one, database join visualization&image_size=landscape_16_9',
     totalLessons: 7,
     duration: 210,
+    quizQuestions: [
+      {
+        id: 'data-merging-q1',
+        type: 'choice',
+        question: '在pandas中，用于合并两个DataFrame的函数是？',
+        options: [
+          'concat()',
+          'merge()',
+          'join()',
+          'combine()'
+        ],
+        correctAnswer: 1,
+        explanation: 'merge()是pandas中用于数据库风格连接的主要函数，支持多种连接方式。'
+      },
+      {
+        id: 'data-merging-q2',
+        type: 'choice',
+        question: '哪种连接方式会保留左表的所有行？',
+        options: [
+          '内连接',
+          '左连接',
+          '外连接',
+          '交叉连接'
+        ],
+        correctAnswer: 1,
+        explanation: '左连接（left join）会保留左表的所有行，右表中没有匹配的行用NaN填充。'
+      },
+      {
+        id: 'data-merging-q3',
+        type: 'choice',
+        question: 'concat()函数的默认轴方向是？',
+        options: [
+          'axis=0（按行合并）',
+          'axis=1（按列合并）',
+          'axis=2（按深度合并）',
+          '需要手动指定'
+        ],
+        correctAnswer: 0,
+        explanation: 'concat()默认按行合并（axis=0），即将多个DataFrame上下堆叠。'
+      },
+      {
+        id: 'data-merging-q4',
+        type: 'practical',
+        question: '写出将DataFrame df1和df2按"user_id"列进行内连接的代码。',
+        correctAnswer: 'pd.merge(df1, df2, on="user_id")',
+        explanation: '使用pd.merge()进行内连接，on参数指定连接键。'
+      }
+    ],
     chapters: [
       {
         id: 'ch1',

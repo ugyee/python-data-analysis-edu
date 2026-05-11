@@ -4,7 +4,6 @@ import { Play, RefreshCw, Copy, CheckCircle } from 'lucide-react';
 export function MiniCodeRunner() {
   const [code, setCode] = useState(`import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 # 示例：创建DataFrame
 data = {'姓名': ['张三', '李四', '王五', '赵六'], 
@@ -12,14 +11,6 @@ data = {'姓名': ['张三', '李四', '王五', '赵六'],
         '城市': ['北京', '上海', '广州', '深圳']}
 df = pd.DataFrame(data)
 print(df)
-
-# 示例：绘图
-plt.figure(figsize=(8, 5))
-plt.bar(df['姓名'], df['年龄'], color='#8B5CF6')
-plt.title('年龄分布')
-plt.xlabel('姓名')
-plt.ylabel('年龄')
-plt.show()
 `);
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -27,21 +18,55 @@ plt.show()
   const [error, setError] = useState('');
   const [plotImage, setPlotImage] = useState('');
   const [copied, setCopied] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState('');
 
   useEffect(() => {
     async function loadPyodide() {
-      const pyodideScript = document.createElement('script');
-      pyodideScript.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js';
-      pyodideScript.onload = async () => {
-        const pyodide = await (window as any).loadPyodide();
-        (window as any).pyodide = pyodide;
-        await pyodide.loadPackage(['pandas', 'numpy', 'matplotlib']);
-        setHasLoaded(true);
-      };
-      document.head.appendChild(pyodideScript);
-      return () => {
-        document.head.removeChild(pyodideScript);
-      };
+      try {
+        setLoadingProgress('正在加载Pyodide...');
+        const pyodideScript = document.createElement('script');
+        pyodideScript.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+        pyodideScript.onload = async () => {
+          try {
+            setLoadingProgress('初始化Pyodide...');
+            const pyodide = await (window as any).loadPyodide({
+              indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'
+            });
+            (window as any).pyodide = pyodide;
+            
+            setLoadingProgress('加载numpy...');
+            await pyodide.loadPackage('numpy');
+            
+            setLoadingProgress('加载pandas...');
+            await pyodide.loadPackage('pandas');
+            
+            setLoadingProgress('加载matplotlib...');
+            await pyodide.loadPackage('matplotlib');
+            
+            setLoadingProgress('');
+            setHasLoaded(true);
+          } catch (loadErr: any) {
+            console.error('Pyodide load error:', loadErr);
+            setError('加载失败: ' + String(loadErr));
+            setLoadingProgress('');
+          }
+        };
+        pyodideScript.onerror = (err: any) => {
+          console.error('Script load error:', err);
+          setError('无法加载Pyodide');
+          setLoadingProgress('');
+        };
+        document.head.appendChild(pyodideScript);
+        return () => {
+          if (document.head.contains(pyodideScript)) {
+            document.head.removeChild(pyodideScript);
+          }
+        };
+      } catch (err) {
+        console.error('Init error:', err);
+        setError('初始化失败');
+        setLoadingProgress('');
+      }
     }
     loadPyodide();
   }, []);
@@ -52,7 +77,7 @@ plt.show()
     setPlotImage('');
     
     if (!(window as any).pyodide) {
-      setError('Pyodide 加载中...');
+      setError('Pyodide 加载中...请稍候');
       return;
     }
 
@@ -61,54 +86,33 @@ plt.show()
     try {
       const pyodide = (window as any).pyodide;
       
+      const userCode = code.trim();
+      
       const fullCode = `
-import matplotlib.pyplot as plt
-import io
 import sys
 from io import StringIO
 
-plt.switch_backend('Agg')
-
-# 捕获输出
-old_stdout = sys.stdout
 captured_output = StringIO()
 sys.stdout = captured_output
 
-# 绘图函数
-def show_plot():
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', bbox_inches='tight')
-    buf.seek(0)
-    import base64
-    return base64.b64encode(buf.read()).decode('utf-8')
+${userCode}
 
-# 用户代码
-${code}
-
-# 恢复输出
-sys.stdout = old_stdout
-
-# 获取捕获的输出
+sys.stdout = sys.__stdout__
 output_text = captured_output.getvalue()
-
-# 获取图片
-plot_image = show_plot()
-
-output_text, plot_image
+output_text
 `;
       
+      console.log('Running code...');
       const result = await pyodide.runPythonAsync(fullCode);
+      console.log('Result:', result);
       
       if (result) {
-        const [text, img] = result;
-        setOutput(text);
-        
-        if (img && typeof img === 'string' && img.length > 0) {
-          setPlotImage(img);
-        }
+        setOutput(String(result));
       }
-    } catch (err) {
-      setError(String(err));
+    } catch (err: any) {
+      console.error('Execution error:', err);
+      const errorMsg = err.message || String(err);
+      setError('执行错误: ' + errorMsg);
     } finally {
       setIsRunning(false);
     }
@@ -117,7 +121,6 @@ output_text, plot_image
   const handleReset = () => {
     setCode(`import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 # 示例：创建DataFrame
 data = {'姓名': ['张三', '李四', '王五', '赵六'], 
@@ -125,14 +128,6 @@ data = {'姓名': ['张三', '李四', '王五', '赵六'],
         '城市': ['北京', '上海', '广州', '深圳']}
 df = pd.DataFrame(data)
 print(df)
-
-# 示例：绘图
-plt.figure(figsize=(8, 5))
-plt.bar(df['姓名'], df['年龄'], color='#8B5CF6')
-plt.title('年龄分布')
-plt.xlabel('姓名')
-plt.ylabel('年龄')
-plt.show()
 `);
     setOutput('');
     setError('');
@@ -153,7 +148,7 @@ plt.show()
           <span className={`text-xs px-2.5 py-1 rounded-full ${
             hasLoaded ? 'bg-green-500/30 text-green-200' : 'bg-yellow-500/30 text-yellow-200'
           }`}>
-            {hasLoaded ? '就绪 ✓' : '加载中...'}
+            {hasLoaded ? '就绪 ✓' : loadingProgress || '加载中...'}
           </span>
         </div>
       </div>

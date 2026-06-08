@@ -2,14 +2,17 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { mockCourseDetails } from '@/data/mockData';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ChevronLeft, ChevronRight, Home, BookOpen, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Home, BookOpen, ArrowLeft, BookText, Code, Lightbulb, CheckCircle } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { LessonQuiz } from '@/components/LessonQuiz';
+import { LearningProgress } from '@/components/LearningProgress';
+import { useState } from 'react';
 
 export function Learn() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const navigate = useNavigate();
   const course = mockCourseDetails[courseId || ''];
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   if (!course) {
     return (
@@ -71,6 +74,147 @@ export function Learn() {
     );
   }
 
+  const handleCopyCode = (code: string, index: number) => {
+    navigator.clipboard.writeText(code);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const renderLessonContent = () => {
+    const content = currentLesson.content || '';
+    const sections = content.split(/(?=## .*)/g).filter(s => s.trim());
+    
+    return sections.map((section, index) => {
+      const match = section.match(/^##\s+(.+)/);
+      const sectionTitle = match ? match[1] : `章节 ${index + 1}`;
+      const sectionContent = section.replace(/^##\s+.+\n/, '');
+      
+      const codeBlockMatch = sectionContent.match(/```python\n([\s\S]*?)```/);
+      const hasCode = !!codeBlockMatch;
+      
+      return (
+        <div key={index} className="mb-6">
+          {/* 概念讲解卡片 */}
+          <div className="bg-white rounded-2xl shadow-soft p-5 mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <BookText size={20} className="text-primary-600" />
+              <h2 className="text-lg font-semibold text-soft-text">{sectionTitle}</h2>
+            </div>
+            <div className="prose prose-slate max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {sectionContent}
+              </ReactMarkdown>
+            </div>
+            
+            {/* 代码块单独展示 */}
+            {hasCode && codeBlockMatch && (
+              <div className="mt-4 bg-slate-900 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                  <button
+                    onClick={() => handleCopyCode(codeBlockMatch[1], index)}
+                    className="flex items-center gap-1.5 px-3 py-1 text-xs text-slate-400 hover:text-white transition-colors"
+                  >
+                    {copiedIndex === index ? (
+                      <>
+                        <CheckCircle size={14} className="text-green-400" />
+                        <span className="text-green-400">已复制</span>
+                      </>
+                    ) : (
+                      <>
+                        <Code size={14} />
+                        <span>复制代码</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <pre className="text-sm text-slate-300 overflow-x-auto">
+                  <code>{codeBlockMatch[1]}</code>
+                </pre>
+              </div>
+            )}
+          </div>
+
+          {/* "试一试"练习区域 */}
+          {currentLesson.practice && (
+            <div className="bg-gradient-to-br from-primary-50 to-purple-50/30 rounded-2xl p-5 border border-primary-100">
+              <div className="flex items-center gap-2 mb-4">
+                <Code size={20} className="text-primary-600" />
+                <h3 className="font-semibold text-soft-text">💻 试一试：{currentLesson.practice.title}</h3>
+              </div>
+
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
+                    <Lightbulb size={14} className="text-primary-600" />
+                  </span>
+                  <span className="text-sm font-medium text-soft-muted">练习目标</span>
+                </div>
+                <p className="text-soft-text pl-8">{currentLesson.practice.description}</p>
+              </div>
+
+              <div className="bg-slate-900 rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                  <button
+                    onClick={() => handleCopyCode(currentLesson.practice.initialCode, index + 100)}
+                    className="flex items-center gap-1.5 px-3 py-1 text-xs text-slate-400 hover:text-white transition-colors"
+                  >
+                    {copiedIndex === index + 100 ? (
+                      <>
+                        <CheckCircle size={14} className="text-green-400" />
+                        <span className="text-green-400">已复制</span>
+                      </>
+                    ) : (
+                      <>
+                        <Code size={14} />
+                        <span>复制代码</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <pre className="text-sm text-slate-300 overflow-x-auto">
+                  <code>{currentLesson.practice.initialCode}</code>
+                </pre>
+              </div>
+
+              <div className="bg-white rounded-xl p-4 border border-primary-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-soft-muted">📊 预期输出</span>
+                </div>
+                <pre className="text-sm text-soft-text bg-slate-50 rounded-lg p-3">
+                  {currentLesson.practice.expectedOutput}
+                </pre>
+              </div>
+
+              {currentLesson.practice.hints && currentLesson.practice.hints.length > 0 && (
+                <div className="mt-4 bg-amber-50 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lightbulb size={16} className="text-amber-600" />
+                    <span className="text-sm font-medium text-amber-700">💡 提示</span>
+                  </div>
+                  <ul className="text-sm text-amber-800 space-y-1 pl-6">
+                    {currentLesson.practice.hints.map((hint, i) => (
+                      <li key={i}>{hint}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
   return (
     <Layout showCodeRunner layoutType="learn">
       {/* 左侧大纲 */}
@@ -118,6 +262,7 @@ export function Learn() {
       {/* 中间内容 */}
       <main className="h-full overflow-y-auto bg-soft-bg rounded-2xl">
         <div className="p-5">
+          {/* 面包屑导航 */}
           <div className="mb-6">
             <div className="flex items-center gap-2 text-sm text-soft-muted mb-2 flex-wrap">
               <Link to="/" className="hover:text-soft-text transition-colors flex items-center gap-1">
@@ -137,20 +282,26 @@ export function Learn() {
             )}
           </div>
 
+          {/* 测验类型 */}
           {currentLesson.type === 'quiz' && course.quizQuestions ? (
             <div className="bg-white rounded-2xl shadow-soft p-5 mb-6">
               <LessonQuiz questions={course.quizQuestions} />
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-soft p-5 mb-6">
-              <div className="prose prose-slate max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {currentLesson.content || '暂无内容'}
-                </ReactMarkdown>
-              </div>
-            </div>
+            <>
+              {/* 学习进度提示（固定在顶部） */}
+              <LearningProgress
+                completedLessons={currentLessonIndex + 1}
+                totalLessons={allLessons.length}
+                currentLessonTitle={currentLesson.title}
+              />
+
+              {/* 概念讲解 + 试一试练习（交替出现） */}
+              {renderLessonContent()}
+            </>
           )}
 
+          {/* 底部导航按钮 */}
           <div className="flex items-center justify-between pt-4 border-t border-primary-100">
             <div>
               {prevLesson ? (

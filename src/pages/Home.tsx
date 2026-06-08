@@ -1,37 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { CourseCard } from '@/components/CourseCard';
 import { GetCodeModal } from '@/components/GetCodeModal';
 import { mockCourses } from '@/data/mockData';
-import { ArrowLeft, ArrowRight, BookOpen, Sparkles, Star, Rocket, TrendingUp, Calendar, Users, CheckCircle, Play, Clock, Award, GraduationCap, List } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Sparkles, Star, Rocket, TrendingUp, Calendar, Users, CheckCircle, Play, Clock, Award, GraduationCap } from 'lucide-react';
 import { SpaceRocketIllustration } from '@/components/Illustrations';
 import { Layout } from '@/components/Layout';
-
-const sidebarItems = [
-  { id: 'course-overview', label: '课程概览', icon: BookOpen },
-  { id: 'project-data-cleaning', label: '项目1: 数据清洗实战', icon: Rocket },
-  { id: 'project-group-aggregation', label: '项目2: 分组聚合分析', icon: Rocket },
-  { id: 'project-market-basket', label: '项目3: 购物篮分析', icon: Rocket },
-  { id: 'project-customer-clustering', label: '项目4: 客户聚类分析', icon: Rocket },
-  { id: 'project-data-visualization', label: '项目5: 数据可视化', icon: Rocket },
-  { id: 'project-ab-testing', label: '项目6: A/B测试分析', icon: Rocket },
-  { id: 'project-time-series', label: '项目7: 时间序列分析', icon: Rocket },
-  { id: 'project-feature-engineering', label: '项目8: 特征工程', icon: Rocket },
-  { id: 'project-anomaly-detection', label: '项目9: 异常值检测', icon: Rocket },
-  { id: 'project-data-merging', label: '项目10: 多数据集合并', icon: Rocket },
-  { id: 'instructor', label: '讲师介绍', icon: GraduationCap },
-];
 
 export function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('course-overview');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [completedProjects, setCompletedProjects] = useState<Set<string>>(new Set());
   const [startLearningState, setStartLearningState] = useState({ disabled: false, text: '' });
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const handleStartLearning = () => {
     setStartLearningState({ disabled: true, text: '⏳ 加载中...' });
@@ -61,96 +43,9 @@ export function Home() {
     localStorage.setItem('completedProjects', JSON.stringify([...newCompleted]));
   };
 
-  useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: '-20% 0px -70% 0px',
-      threshold: 0,
-    };
-
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-    const sectionIds = ['course-overview', ...sidebarItems.filter(item => item.id.startsWith('project-')).map(item => item.id), 'instructor'];
-    sectionIds.forEach((id) => {
-      const element = document.getElementById(id);
-      if (element) {
-        observer.observe(element);
-        sectionRefs.current[id] = element;
-      }
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setActiveSection(id);
-      setIsSidebarOpen(false);
-    }
-  };
-
   return (
     <Layout>
-      <div className="flex min-h-screen">
-        <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-white/80 backdrop-blur-xl border-r border-soft-bg border-soft-border shadow-card overflow-y-auto z-40">
-          <div className="sticky top-0 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-soft-text">课程目录</h2>
-              <button
-                onClick={() => setIsSidebarOpen(false)}
-                className="lg:hidden p-2 rounded-lg hover:bg-soft-bg transition-colors"
-              >
-                <List size={20} className="text-soft-muted" />
-              </button>
-            </div>
-            <nav className="space-y-1">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeSection === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => scrollToSection(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-primary-100 to-accent-lavender/30 text-primary-700 font-semibold shadow-soft'
-                        : 'text-soft-muted hover:bg-soft-bg hover:text-soft-text'
-                    }`}
-                  >
-                    <Icon size={18} className={isActive ? 'text-primary-600' : ''} />
-                    <span className="text-sm truncate">{item.label}</span>
-                    {isActive && (
-                      <div className="ml-auto w-2 h-2 rounded-full bg-primary-500" />
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </aside>
-
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden fixed bottom-4 left-4 z-50 flex items-center gap-2 px-4 py-3 bg-soft-gradient text-white rounded-full shadow-soft-lg hover:shadow-soft-xl transition-all"
-        >
-          <List size={20} />
-          <span className="font-medium">目录</span>
-        </button>
-
-        <main className="flex-1 ml-0 lg:ml-[280px] pt-4 pb-12">
-          <div className="pt-4 pb-12">
+      <main className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
         <section className="mb-12">
           <div className="bg-gradient-to-br from-primary-100/60 via-accent-pink/20 to-accent-lavender/30 rounded-3xl p-8 shadow-soft relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary-300/30 to-accent-pink/20 rounded-full blur-3xl" />
@@ -494,18 +389,9 @@ export function Home() {
             </div>
           </div>
         </section>
-      </div>
       </main>
       
       <GetCodeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-    </div>
-  </Layout>
+    </Layout>
   );
 }
